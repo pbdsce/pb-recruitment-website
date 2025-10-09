@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-import React from "react";
->>>>>>> efd5450 (Landing Page)
 import { motion } from "framer-motion";
 import bg from "@/assets/Bg.png";
 
