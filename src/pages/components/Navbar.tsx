@@ -9,25 +9,25 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const mobileMenuVariants = {
-    hidden: { 
+    hidden: {
       height: 0,
       opacity: 0,
       borderBottom: "1px solid rgba(156, 163, 175, 0)",
       transition: {
-        height: { duration: 0.4 },
+        height: { duration: 0.8 },
         opacity: { duration: 0.3 },
-      }
+      },
     },
     show: {
       height: "auto",
       opacity: 1,
       borderBottom: "1px solid rgba(156, 163, 175, 0.4)",
       transition: {
-        height: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+        height: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
         opacity: { duration: 0.4, ease: "easeOut" },
         when: "beforeChildren",
         staggerChildren: 0.1,
-      }
+      },
     },
     exit: {
       height: 0,
@@ -38,23 +38,41 @@ export default function Navbar() {
         opacity: { duration: 0.3 },
         when: "afterChildren",
         staggerChildren: 0.05,
-        staggerDirection: -1
-      }
-    }
+        staggerDirection: -1,
+      },
+    },
   };
 
   const mobileItemVariants = {
     hidden: { opacity: 0, y: 10 },
     show: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
+    exit: { opacity: 0, y: -10 },
+  };
+
+  const desktopFade = {
+    hidden: { opacity: 0, y: -10 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
   };
 
   return (
-    <nav className="w-full font-inter bg-black text-white shadow-sm md:border-b border-gray-400 px-4 sm:px-6 py-3">
+    <motion.nav
+      className="w-full font-inter bg-black text-white shadow-sm md:border-b border-gray-400 px-4 sm:px-6 py-3"
+      initial="hidden"
+      animate="show"
+      variants={desktopFade}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Link to="/" className="flex items-center space-x-2">
-            <img src={Logo} alt="Logo" className="object-fill w-40 hover:scale-105 transition-transform" />
+            <img
+              src={Logo}
+              alt="Logo"
+              className="object-fill w-40 hover:scale-105 transition-transform"
+            />
           </Link>
         </div>
 
@@ -122,6 +140,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
 }
