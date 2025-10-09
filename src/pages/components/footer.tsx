@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import logo from "@/assets/logo.png";
+import { Link } from "react-router-dom";
 import { Instagram, Twitter, Linkedin, Trophy, Code2 } from "lucide-react";
 
 export default function Footer() {
@@ -29,11 +30,13 @@ export default function Footer() {
         className="container mx-auto px-4"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <motion.div variants={fadeInUp} className="flex flex-col items-center md:items-start">
-            <img src={logo} alt="PB DSC Logo" className="h-6 mb-4" />
+          <motion.div variants={fadeInUp} className="flex flex-col items-start">
+            <Link to="/" className="flex items-center space-x-2">
+              <img src={logo} alt="PB DSC Logo" className="h-6 mb-4 hover:scale-105 transition-transform" />
+            </Link>
           </motion.div>
 
-          <motion.div variants={fadeInUp} className="flex flex-col items-center md:items-start">
+          <motion.div variants={fadeInUp} className="flex flex-col items-start text-left">
             <h3 className="text-xl mb-4">Quick Links</h3>
             <motion.div
               className="flex flex-col space-y-2"
@@ -56,7 +59,7 @@ export default function Footer() {
             </motion.div>
           </motion.div>
 
-          <motion.div variants={fadeInUp} className="flex flex-col items-center md:items-start">
+          <motion.div variants={fadeInUp} className="flex flex-col items-start text-left">
             <h3 className="text-xl mb-4">Connect With Us</h3>
             <div className="flex space-x-4">
               <motion.a

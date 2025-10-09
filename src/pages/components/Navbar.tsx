@@ -98,7 +98,7 @@ export default function Navbar() {
             variants={mobileMenuVariants}
             className="md:hidden overflow-hidden"
           >
-            <div className="py-4 space-y-4">
+            <div className="py-8 space-y-4">
               <motion.a
                 variants={mobileItemVariants}
                 href="/contest"
