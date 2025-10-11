@@ -80,7 +80,7 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6">
           <a
-            href="/contest"
+            href="/contests"
             className="text-gray-300 hover:text-green-600 transition-colors font-medium"
           >
             Contest
