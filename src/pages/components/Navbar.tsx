@@ -60,7 +60,7 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      className="w-full font-inter bg-black text-white shadow-sm md:border-b border-gray-400 px-4 sm:px-6 py-3"
+      className="w-full font-dm-sans bg-black text-white shadow-sm md:border-b border-gray-400 px-4 sm:px-6 py-3"
       initial="hidden"
       animate="show"
       variants={desktopFade}
