@@ -46,7 +46,7 @@ export default function HeroSection() {
           READY, SET <br /> RECRUIT!
         </motion.h1>
         <motion.p variants={slideUp} className="text-gray-300 text-lg md:text-2xl font-medium mb-8 drop-shadow-md">
-          Challenge yourself, prove your skills, make it count.
+          Challenge yourself, prove your skills, <br className="md:hidden" /> make it count.
         </motion.p>
         <motion.button
           variants={fadeIn}

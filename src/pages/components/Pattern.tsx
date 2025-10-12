@@ -59,7 +59,7 @@ export default function Pattern() {
           <div className="rounded-2xl border border-gray-700/60 bg-zinc-900/40 p-6">
             <div className="text-4xl md:text-5xl font-anton text-green mb-2">120 min</div>
             <div className="text-xl font-semibold mb-1">Total Duration</div>
-            <p className="text-gray-300 text-sm md:text-base">Single sitting. Partial scoring enabled. Languages: C++, JavaScript, Python.</p>
+            <p className="text-gray-300 text-sm md:text-base">Single sitting. Partial scoring enabled. Languages: C, C++, Java, Javascript, Typescript and Python.</p>
           </div>
         </motion.div>
 
@@ -71,7 +71,7 @@ export default function Pattern() {
             - Custom test cases available for DSA problems after initial submission.
           </div>
           <div className="text-gray-400 text-sm">
-            - Leaderboard updates live as you submit solutions.
+            - Live leaderboards.
           </div>
         </motion.div>
       </motion.div>
