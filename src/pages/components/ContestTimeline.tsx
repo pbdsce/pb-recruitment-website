@@ -45,42 +45,39 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
             <h2 className="text-2xl font-anton text-beige mb-6">Contest Timeline</h2>
             <div className="space-y-4 relative">
               {/* Background vertical line */}
-              <div className="absolute left-1.5 top-0 bottom-0 w-1 bg-gray-600" style={{ height: "100%" }} />
-              
-              {/* Start Time */}
-              <div className="flex gap-4 items-start relative z-10">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-4 h-4 rounded-full bg-green-400 border-4 border-gray-900" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Starts in</p>
-                  <p className="text-white font-semibold text-lg">{contest.startTime}</p>
-                </div>
-              </div>
+              <div className="absolute left-1.5 top-0 bottom-0 w-1 bg-gray-600" style={{ height: "100%" }} /> 
+              {/* Dynamic, sorted timeline */}
+                {(() => {
+                // Timeline events array
+                const timelineEvents = [
+                    { label: "Starts in", time: contest.startTime, color: "bg-green-400" },
+                    { label: "Registration closes at", time: contest.registrationOpenUntil, color: "bg-yellow-400" },
+                    { label: "Ends at", time: contest.endTime, color: "bg-red-400" },
+                ];
 
-              {/* Registration Closes */}
-              <div className="flex gap-4 items-start relative z-10">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-4 h-4 rounded-full bg-yellow-400 border-4 border-gray-900" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Registration closes at</p>
-                  <p className="text-white font-semibold text-lg">
-                    {contest.registrationOpenUntil}
-                  </p>
-                </div>
-              </div>
+                // Sort by actual time
+                timelineEvents.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
-              {/* End Time */}
-              <div className="flex gap-4 items-start relative z-10">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-4 h-4 rounded-full bg-red-400 border-4 border-gray-900" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Ends at</p>
-                  <p className="text-white font-semibold text-lg">{contest.endTime}</p>
-                </div>
-              </div>
+                // Render
+                return (
+                    <div className="space-y-4 relative">
+                    {/* Background vertical line */}
+                    <div className="absolute left-1.5 top-0 bottom-0 w-1 bg-gray-600" style={{ height: "100%" }} />
+
+                    {timelineEvents.map((event, index) => (
+                        <div key={index} className="flex gap-4 items-start relative z-10">
+                        <div className="flex flex-col items-center flex-shrink-0">
+                            <div className={`w-4 h-4 rounded-full border-4 border-gray-900 ${event.color}`} />
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-400">{event.label}</p>
+                            <p className="text-white font-semibold text-lg">{event.time}</p>
+                        </div>
+                        </div>
+                    ))}
+                    </div>
+                );
+                })()}
             </div>
           </motion.div>
 

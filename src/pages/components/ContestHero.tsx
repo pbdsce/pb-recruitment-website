@@ -6,19 +6,6 @@ interface ContestHeroProps {
   contest: ContestDetail;
 }
 
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case "Easy":
-      return "text-green-400";
-    case "Medium":
-      return "text-yellow-400";
-    case "Hard":
-      return "text-red-400";
-    default:
-      return "text-gray-400";
-  }
-};
-
 const ContestHero: React.FC<ContestHeroProps> = ({ contest }) => {
   const slideUp = {
     hidden: { opacity: 0, y: 30 },
@@ -47,20 +34,6 @@ const ContestHero: React.FC<ContestHeroProps> = ({ contest }) => {
         >
           {/* Main Info */}
           <motion.div variants={slideUp} className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
-              <span className="text-sm font-semibold bg-green-900/40 border border-green-500/50 text-green-300 px-3 py-1 rounded-full">
-                {contest.domain}
-              </span>
-              <span
-                className={`text-sm font-semibold px-3 py-1 rounded-full border ${
-                  contest.registrationOpen
-                    ? "bg-green-900/30 border-green-500/50 text-green-400"
-                    : "bg-red-900/30 border-red-500/50 text-red-400"
-                }`}
-              >
-                {contest.registrationStatus}
-              </span>
-            </div>
             <h1 className="text-4xl md:text-5xl font-anton text-beige mb-4 leading-tight">
               {contest.name}
             </h1>
@@ -79,18 +52,10 @@ const ContestHero: React.FC<ContestHeroProps> = ({ contest }) => {
                 <p className="text-white font-semibold text-lg">{contest.duration}</p>
               </div>
               <div>
-                <p className="text-gray-400 text-sm mb-1">Problems</p>
-                <p className="text-white font-semibold text-lg">{contest.problemCount}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Difficulty</p>
-                <p className={`font-semibold text-lg ${getDifficultyColor(contest.difficulty)}`}>
-                  {contest.difficulty}
+                <p className="text-gray-400 text-sm mb-1">Registration</p>
+                <p className="text-white font-semibold text-lg">
+                {contest.registrationOpen ? "Open" : "Closed"}
                 </p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Participants</p>
-                <p className="text-white font-semibold text-lg">{contest.participants}+</p>
               </div>
             </div>
           </motion.div>

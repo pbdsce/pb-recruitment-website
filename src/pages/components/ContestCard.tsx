@@ -9,34 +9,12 @@ interface Contest {
   endTime: string;
   registrationOpen: boolean;
   duration: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  participants: number;
-  domain: string;
 }
 
 interface ContestCardProps {
   contest: Contest;
   onClick: () => void;
 }
-
-const getStatusColor = (status: boolean) => {
-  return status
-    ? "bg-green-900/30 border-green-500/50 text-green-400"
-    : "bg-red-900/30 border-red-500/50 text-red-400";
-};
-
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case "Easy":
-      return "text-green-400";
-    case "Medium":
-      return "text-yellow-400";
-    case "Hard":
-      return "text-red-400";
-    default:
-      return "text-gray-400";
-  }
-};
 
 const ContestCard: React.FC<ContestCardProps> = ({ contest, onClick }) => {
   return (
@@ -49,22 +27,11 @@ const ContestCard: React.FC<ContestCardProps> = ({ contest, onClick }) => {
       <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/0 to-green-500/0 group-hover:from-green-500/5 group-hover:to-transparent transition-all duration-300 pointer-events-none" />
 
       <div className="relative z-10">
-        {/* Header with domain badge */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="text-xl md:text-2xl font-anton text-beige mb-2 group-hover:text-green-400 transition-colors">
               {contest.name}
             </h3>
-            <span className="inline-block text-xs font-semibold bg-green-900/40 border border-green-500/50 text-green-300 px-3 py-1 rounded-full">
-              {contest.domain}
-            </span>
-          </div>
-          <div
-            className={`text-right px-3 py-1 rounded-full border text-sm font-semibold ${getStatusColor(
-              contest.registrationOpen
-            )}`}
-          >
-            {contest.registrationOpen ? "Open" : "Closed"}
           </div>
         </div>
 
@@ -72,30 +39,6 @@ const ContestCard: React.FC<ContestCardProps> = ({ contest, onClick }) => {
         <p className="text-gray-300 text-sm md:text-base mb-4 line-clamp-2">
           {contest.description}
         </p>
-
-        {/* Contest details grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-          <div>
-            <p className="text-gray-400 text-xs mb-1">Duration</p>
-            <p className="text-gray-100 font-semibold">{contest.duration}</p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs mb-1">Difficulty</p>
-            <p className={`font-semibold ${getDifficultyColor(contest.difficulty)}`}>
-              {contest.difficulty}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs mb-1">Participants</p>
-            <p className="text-gray-100 font-semibold">{contest.participants}</p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs mb-1">Registration</p>
-            <p className={`font-semibold ${contest.registrationOpen ? 'text-green-400' : 'text-red-400'}`}>
-              {contest.registrationOpen ? 'Open' : 'Closed'}
-            </p>
-          </div>
-        </div>
 
         {/* Time details */}
         <div className="grid grid-cols-2 gap-4 mb-4 text-sm border-t border-gray-700 pt-4">
