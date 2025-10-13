@@ -79,7 +79,7 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6">
           <a
-            href="/contest"
+            href="/contests"
             className="text-gray-300 hover:text-green-600 transition-colors font-medium"
           >
             Contest
@@ -119,7 +119,7 @@ export default function Navbar() {
             <div className="py-8 space-y-4">
               <motion.a
                 variants={mobileItemVariants}
-                href="/contest"
+                href="/contests"
                 className="block text-white hover:text-gray-400 font-medium px-2"
               >
                 Contest
