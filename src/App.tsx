@@ -5,6 +5,7 @@ import TestPage from "./pages/test_page";
 import Home from "./pages/Home";
 import ContestDetail from "./pages/ContestDetail";
 import ContestList from "./pages/ContestList";
+import { ContestProblemsPage } from './features/contests/pages/ContestProblemsPage';
 const App: React.FC = () => {
   return (
       <Routes>
@@ -13,8 +14,10 @@ const App: React.FC = () => {
         <Route path="/leaderboard" element={<TestPage />} />
         <Route path="/contests" element={<ContestList />} />
         <Route path="/contest/:id" element={<ContestDetail />} />
+        <Route path="/contests/:contestId/problems" element={<ContestProblemsPage />} />
       </Routes>
   );
 };
 
 export default App;
+
