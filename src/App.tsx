@@ -14,7 +14,7 @@ const App: React.FC = () => {
         <Route path="/leaderboard" element={<TestPage />} />
         <Route path="/contests" element={<ContestList />} />
         <Route path="/contest/:id" element={<ContestDetail />} />
-        <Route path="/contests/:contestId/problems" element={<ContestProblemsPage />} />
+        <Route path="/contest/:contestId/problems" element={<ContestProblemsPage />} />
       </Routes>
   );
 };
