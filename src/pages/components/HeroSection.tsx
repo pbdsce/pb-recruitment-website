@@ -1,15 +1,21 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import bg from "@/assets/Bg.png";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function HeroSection() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
   const containerVariants = {
     hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.25,
-        delayChildren: 0.4,
-      },
-    },
+    show: { transition: { staggerChildren: 0.25, delayChildren: 0.4 } },
   };
 
   const slideUp = {
@@ -23,22 +29,20 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative w-full h-screen flex items-center font-dm-sans justify-center overflow-hidden">
+    <section className="relative w-full h-screen flex items-center justify-center overflow-hidden font-dm-sans">
       <motion.img
         initial="hidden"
-        animate="show"
+        animate={isLoaded ? "show" : "hidden"}
         variants={fadeIn}
         className="absolute z-0 inset-0 w-full h-full object-cover"
         src={bg}
         alt="Background"
       />
-
-      {/* Overlay */}
       <div className="absolute inset-0 z-10 bg-black opacity-60" />
 
       <motion.div
         initial="hidden"
-        animate="show"
+        animate={isLoaded ? "show" : "hidden"}
         variants={containerVariants}
         className="relative z-10 flex flex-col items-center justify-center text-center px-4"
       >
@@ -48,12 +52,14 @@ export default function HeroSection() {
         <motion.p variants={slideUp} className="text-gray-300 text-lg md:text-2xl font-medium mb-8 drop-shadow-md">
           Challenge yourself, prove your skills, <br className="block md:hidden" />make it count.
         </motion.p>
+
         <motion.button
           variants={fadeIn}
           transition={{ delay: 0.6 }}
+          onClick={() => user ? navigate("/contests") : navigate("/signup")}
           className="bg-green text-black font-semibold px-8 py-3 rounded-full text-lg shadow-md hover:bg-green-600 transition-colors"
         >
-          Login / Register
+          {user ? "Contests" : "Sign Up"}
         </motion.button>
       </motion.div>
     </section>

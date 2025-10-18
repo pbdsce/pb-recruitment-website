@@ -1,12 +1,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, User, LogOut } from "lucide-react";
 import Logo from "@/assets/logo.png";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const mobileMenuVariants = {
     hidden: {
@@ -90,9 +102,36 @@ export default function Navbar() {
           >
             Leaderboard
           </a>
-          <Button className="bg-green-600 text-white font-semibold px-5 py-2 rounded-full hover:bg-green-700 transition-colors">
-            Login
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-gray-300">
+                <User className="w-5 h-5" />
+                <span className="font-medium">{user.email}</span>
+              </div>
+              <Button 
+                className="border-2 border-red-500 text-red-500 font-semibold px-4 py-2 rounded-full hover:bg-red-500 hover:text-white transition-colors"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button 
+                className="bg-green-600 text-white font-semibold px-5 py-2 rounded-full hover:bg-green-700 transition-colors"
+                onClick={() => navigate("/login")}
+              >
+                Log In
+              </Button>
+              <Button 
+                className="border-2 border-green text-white font-semibold px-5 py-2 rounded-full hover:border-green-700 transition-colors"
+                onClick={() => navigate("/signup")}
+              >
+                Sign Up
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Mobile Hamburger */}
@@ -131,10 +170,37 @@ export default function Navbar() {
               >
                 Leaderboard
               </motion.a>
-              <motion.div variants={mobileItemVariants} className="px-2">
-                <Button className="w-full bg-green text-white font-semibold px-5 py-2 rounded-full hover:bg-green transition-colors">
-                  Login
-                </Button>
+              <motion.div variants={mobileItemVariants} className="px-2 flex flex-col gap-3">
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-2 text-gray-300 py-2">
+                      <User className="w-5 h-5" />
+                      <span className="font-medium">{user.email}</span>
+                    </div>
+                    <Button 
+                      className="w-full border-2 border-red-500 text-red-500 font-semibold px-5 py-2 rounded-full hover:bg-red-500 hover:text-white transition-colors"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      className="w-full bg-green text-white font-semibold px-5 py-2 rounded-full hover:bg-green-700 transition-colors"
+                      onClick={() => navigate("/login")}
+                    >
+                      Log In
+                    </Button>
+                    <Button 
+                      className="w-full border-2 border-green text-white font-semibold px-5 py-2 rounded-full hover:bg-green-700 transition-colors"
+                      onClick={() => navigate("/signup")}
+                    >
+                      Sign Up
+                    </Button>
+                  </>
+                )}
               </motion.div>
             </div>
           </motion.div>
