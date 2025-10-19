@@ -1,4 +1,4 @@
-import type { Problem } from '@/features/contests/problem.types';
+import type { Problem, LeaderboardEntry, Contest } from '@/features/contests/problem.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -24,6 +24,20 @@ class ContestApiService {
   async getProblemById(contestId: string, problemId: string): Promise<Problem> {
     const response = await this.fetchWithError(
       `${API_BASE_URL}/contests/${contestId}/problems/${problemId}`
+    );
+    return response.json();
+  }
+
+  async getContestLeaderboard(contestId: string): Promise<LeaderboardEntry[]> {
+    const response = await this.fetchWithError(
+      `${API_BASE_URL}/contests/${contestId}/leaderboard`
+    );
+    return response.json();
+  }
+
+  async getContestById(contestId: string): Promise<Contest> {
+    const response = await this.fetchWithError(
+      `${API_BASE_URL}/contests/${contestId}`
     );
     return response.json();
   }
