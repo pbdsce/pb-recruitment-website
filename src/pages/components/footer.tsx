@@ -42,7 +42,7 @@ export default function Footer() {
               variants={containerVariants}
             >
               <motion.a
-                href="/leaderboard"
+                href="/contests"
                 className="text-gray-400 hover:text-green transition-colors flex items-center gap-2"
                 variants={fadeInUp}
               >

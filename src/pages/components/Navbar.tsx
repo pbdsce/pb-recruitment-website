@@ -85,7 +85,7 @@ export default function Navbar() {
             Contest
           </a>
           <a
-            href="/leaderboard"
+            href="/contests"
             className="text-gray-300 hover:text-green-600 transition-colors font-medium"
           >
             Leaderboard
@@ -126,7 +126,7 @@ export default function Navbar() {
               </motion.a>
               <motion.a
                 variants={mobileItemVariants}
-                href="/leaderboard"
+                href="/contests"
                 className="block text-white hover:text-gray-400 font-medium px-2"
               >
                 Leaderboard
