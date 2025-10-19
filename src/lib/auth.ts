@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase";
-import type { User } from "firebase/auth";
+import { sendPasswordResetEmail, type User } from "firebase/auth";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
@@ -31,4 +31,13 @@ export const signUpUser = async (data: SignUpData): Promise<User> => {
 export const loginUser = async (email: string, password: string): Promise<User> => {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
   return userCredential.user;
+};
+
+export const resetPassword = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
 };
