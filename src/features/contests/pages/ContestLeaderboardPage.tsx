@@ -103,19 +103,6 @@ export const ContestLeaderboardPage = () => {
         {/* Empty State for Filtered Results */}
         {leaderboard.length === 0 && totalParticipants > 0 && (
           <div className="bg-black border border-gray-800 p-12 text-center">
-            <svg
-              className="w-16 h-16 text-gray-600 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
             <p className="text-gray-400 text-lg mb-2 font-['DM_Sans']">NO RESULTS FOUND</p>
             <p className="text-gray-600 text-sm font-['DM_Sans']">No results found</p>
           </div>

@@ -39,8 +39,6 @@ export interface ProblemScore {
 export interface Contest {
   id: string;
   name: string;
-  registration_start_time: number;
-  registration_end_time: number;
   start_time: number;
   end_time: number;
 }
