@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
 
 interface ContestHeaderProps {
+  contest?: {
+    id: string;
+    name: string;
+    start_time: number;
+    end_time: number;
+  };
   contestName?: string;
   totalTime?: number;
 }
 
 export const ContestHeader = ({ 
+  contest,
   totalTime = 180    
 }: ContestHeaderProps) => {
   const [timeRemaining, setTimeRemaining] = useState(totalTime * 60);
@@ -53,10 +60,10 @@ export const ContestHeader = ({
 
   return (
     <div className="w-full bg-black border-b border-gray-700 sticky top-0 z-50">
-        <div className="px-4 py-2">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-xl font-bold text-white font-['DM_Sans']">Point Blank Recruitment Test 2025</h1>
-            <div className="text-right">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-white font-['DM_Sans'] flex items-center h-full">{contest?.name || 'Point Blank Recruitment Test 2025'}</h1>
+            <div className="text-right flex flex-col justify-center">
               <div className="text-s text-gray-400 font-['DM_Sans']">Time remaining</div>
               <div className={`text-xl font-['DM_Sans'] font-mono ${getTimeColor()}`}>
                 {timeRemaining > 0 ? formatTime(timeRemaining) : 'Time Up!'}
