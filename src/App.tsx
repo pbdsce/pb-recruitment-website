@@ -7,7 +7,6 @@ import ContestDetail from "./pages/ContestDetail";
 import ContestList from "./pages/ContestList";
 import { ContestProblemsPage } from './features/contests/pages/ContestProblemsPage';
 import { ContestLeaderboardPage } from './features/contests/pages/ContestLeaderboardPage';
-
 import { Login } from "./pages/LogIn";
 import { Signup } from "./pages/SignUp";
 import { ForgotPassword } from "./pages/ForgotPassword";
