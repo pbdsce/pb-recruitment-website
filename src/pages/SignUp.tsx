@@ -221,7 +221,6 @@ export const Signup: React.FC = () => {
                     <option value="1st year">1st year</option>
                     <option value="2nd year">2nd year</option>
                     <option value="3rd year">3rd year</option>
-                    <option value="4th year">4th year</option>
                   </select>
                 </div>
               </div>
