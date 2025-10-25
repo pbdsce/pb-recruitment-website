@@ -7,6 +7,9 @@ import ContestDetail from "./pages/ContestDetail";
 import ContestList from "./pages/ContestList";
 import { ContestProblemsPage } from './features/contests/pages/ContestProblemsPage';
 import { ContestLeaderboardPage } from './features/contests/pages/ContestLeaderboardPage';
+import { Login } from "./pages/LogIn";
+import { Signup } from "./pages/SignUp";
+import { ForgotPassword } from "./pages/ForgotPassword";
 
 const App: React.FC = () => {
   return (
@@ -17,10 +20,12 @@ const App: React.FC = () => {
         <Route path="/contests" element={<ContestList />} />
         <Route path="/contest/:id" element={<ContestDetail />} />
         <Route path="/contest/:contestId/problems" element={<ContestProblemsPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/contests/:contestId/leaderboard" element={<ContestLeaderboardPage />} />
       </Routes>
   );
 };
 
 export default App;
-
