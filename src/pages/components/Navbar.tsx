@@ -104,10 +104,12 @@ export default function Navbar() {
           </a>
           {user ? (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-gray-300">
-                <User className="w-5 h-5" />
-                <span className="font-medium">{user.email}</span>
-              </div>
+              <button
+                onClick={() => navigate("/profile")}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-green-600 hover:bg-green-700 transition-colors"
+              >
+                <User className="w-5 h-5 text-white" />
+              </button>
               <Button 
                 className="border-2 border-red-500 text-red-500 font-semibold px-4 py-2 rounded-full hover:bg-red-500 hover:text-white transition-colors"
                 onClick={handleLogout}
@@ -173,10 +175,16 @@ export default function Navbar() {
               <motion.div variants={mobileItemVariants} className="px-2 flex flex-col gap-3">
                 {user ? (
                   <>
-                    <div className="flex items-center gap-2 text-gray-300 py-2">
+                    <button
+                      onClick={() => {
+                        navigate("/profile");
+                        setIsOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
+                    >
                       <User className="w-5 h-5" />
-                      <span className="font-medium">{user.email}</span>
-                    </div>
+                      Profile
+                    </button>
                     <Button 
                       className="w-full border-2 border-red-500 text-red-500 font-semibold px-5 py-2 rounded-full hover:bg-red-500 hover:text-white transition-colors"
                       onClick={handleLogout}

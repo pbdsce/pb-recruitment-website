@@ -5,17 +5,22 @@ import type { ReactNode, FC} from "react";
 import { auth } from "./firebase";
 import type { User } from "firebase/auth";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { fetchUserProfile, type UserProfile } from "./profileService";
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  userProfile: null,
   loading: true,
   logout: async () => {},
+  refreshProfile: async () => {},
 });
 
 interface AuthProviderProps {
@@ -24,11 +29,27 @@ interface AuthProviderProps {
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const profile = await fetchUserProfile(userId);
+      setUserProfile(profile);
+    } catch (error) {
+      console.error("Failed to load user profile:", error);
+      setUserProfile(null);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      if (firebaseUser) {
+        await loadUserProfile(firebaseUser.uid);
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
 
@@ -38,9 +59,16 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     await signOut(auth);
     setUser(null);
+    setUserProfile(null);
   };
 
-  return <AuthContext.Provider value={{ user, loading, logout }}>{children}</AuthContext.Provider>;
+  const refreshProfile = async () => {
+    if (user) {
+      await loadUserProfile(user.uid);
+    }
+  };
+
+  return <AuthContext.Provider value={{ user, userProfile, loading, logout, refreshProfile }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => useContext(AuthContext);
