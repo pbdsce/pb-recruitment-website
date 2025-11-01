@@ -11,7 +11,6 @@ export const LeaderboardRowDetails = ({ problemScores }: LeaderboardRowDetailsPr
       <h4 className="text-sm font-['DM_Sans'] text-gray-400 mb-4">PROBLEM BREAKDOWN</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {problemScores.map((problemScore) => {
-          const isSolved = problemScore.score > 0;
           const scorePercentage = (problemScore.score / problemScore.max_score) * 100;
 
           return (
