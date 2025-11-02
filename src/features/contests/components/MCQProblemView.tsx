@@ -143,8 +143,9 @@ export const MCQProblemView = ({ problem, onSubmit }: MCQProblemViewProps) => {
               onClick={handleClearResponse}
               variant="outline"
               disabled={!selectedAnswer}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-black"
             >
+              Clear Response
             </Button>
             <Button
               onClick={handleSubmit}

@@ -60,8 +60,11 @@ export const CodeProblemView = ({ problem, onSubmit }: CodeProblemViewProps) => 
   const [activeTab, setActiveTab] = useState<'input' | 'output'>('input');
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [editorHeightPct, setEditorHeightPct] = useState<number>(55);
+  const [leftPaneWidthPct, setLeftPaneWidthPct] = useState<number>(50);
   const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [resizeDirection, setResizeDirection] = useState<'vertical' | 'horizontal' | null>(null);
   const rightPaneRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleLanguageChange = useCallback((newLanguage: string) => {
     setSelectedLanguage(newLanguage);
@@ -104,7 +107,7 @@ export const CodeProblemView = ({ problem, onSubmit }: CodeProblemViewProps) => 
   }, []);
 
   useEffect(() => {
-    if (!isResizing) return;
+    if (!isResizing || resizeDirection !== 'vertical') return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!rightPaneRef.current) return;
@@ -115,7 +118,10 @@ export const CodeProblemView = ({ problem, onSubmit }: CodeProblemViewProps) => 
       setEditorHeightPct(clamped);
     };
 
-    const handleMouseUp = () => setIsResizing(false);
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      setResizeDirection(null);
+    };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
@@ -128,12 +134,42 @@ export const CodeProblemView = ({ problem, onSubmit }: CodeProblemViewProps) => 
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [isResizing]);
+  }, [isResizing, resizeDirection]);
+
+  useEffect(() => {
+    if (!isResizing || resizeDirection !== 'horizontal') return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const bounds = containerRef.current.getBoundingClientRect();
+      const relativeX = e.clientX - bounds.left;
+      const pct = (relativeX / bounds.width) * 100;
+      const clamped = Math.max(25, Math.min(75, pct));
+      setLeftPaneWidthPct(clamped);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      setResizeDirection(null);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing, resizeDirection]);
 
   return (
     <div className="flex-1 flex flex-col bg-black text-white overflow-hidden">
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-1/2 border-r border-gray-700 overflow-y-auto">
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
+        <div className="overflow-y-auto border-r border-gray-700" style={{ width: `${leftPaneWidthPct}%` }}>
           <div className="p-6 space-y-6">
             {problem.description && (
               <div className="space-y-2">
@@ -301,7 +337,16 @@ export const CodeProblemView = ({ problem, onSubmit }: CodeProblemViewProps) => 
           </div>
         </div>
 
-        <div ref={rightPaneRef} className={`w-1/2 flex flex-col overflow-hidden ${isResizing ? 'select-none' : ''}`}>
+        <div
+          onMouseDown={() => {
+            setIsResizing(true);
+            setResizeDirection('horizontal');
+          }}
+          className="w-1 cursor-ew-resize hover:bg-gray-700 bg-gray-800 flex-shrink-0"
+          aria-label="Resize panes"
+        />
+
+        <div ref={rightPaneRef} className="flex flex-col overflow-hidden flex-shrink-0" style={{ width: `${100 - leftPaneWidthPct}%` }}>
           <div className="border-b border-gray-700 px-4 py-2 bg-gray-900/50 flex items-center justify-between">
             <select
               value={selectedLanguage}
@@ -380,7 +425,10 @@ export const CodeProblemView = ({ problem, onSubmit }: CodeProblemViewProps) => 
 
           <div className="flex flex-col overflow-hidden" style={{ height: `${100 - editorHeightPct}%` }}>
             <div
-              onMouseDown={() => setIsResizing(true)}
+              onMouseDown={() => {
+                setIsResizing(true);
+                setResizeDirection('vertical');
+              }}
               className="h-1.5 bg-gray-700 hover:bg-gray-500 cursor-ns-resize"
               aria-label="Resize editor"
             />
