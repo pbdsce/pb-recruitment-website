@@ -13,6 +13,7 @@ import { Login } from "./pages/LogIn";
 import { Signup } from "./pages/SignUp";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Profile } from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 const App: React.FC = () => {
   return (
@@ -31,6 +32,7 @@ const App: React.FC = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/contests/:contestId/leaderboard" element={<ContestLeaderboardPage />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
   );
 };
