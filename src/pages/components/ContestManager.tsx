@@ -127,7 +127,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
           onClick={() => setIsModalOpen(true)}
           className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold transition-all duration-200"
         >
-          + Add Contest
+           Create Contest
         </button>
       </div>
 
@@ -188,22 +188,22 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
+                  <div className="flex flex-col gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
                     <button
                       onClick={() => handleEdit(contest)}
-                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded transition-colors font-semibold"
+                      className="w-full bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded transition-colors font-semibold"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(contest.id)}
-                      className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors font-semibold"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors font-semibold"
                     >
                       Delete
                     </button>
                     <button
                       onClick={() => onSelectContest(contest.id)}
-                      className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-semibold"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-semibold"
                     >
                       Manage
                     </button>

@@ -105,16 +105,16 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ contestId, problems, se
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
+                <div className="flex flex-col gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
                   <button
                     onClick={() => handleEdit(problem)}
-                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded transition-colors font-semibold"
+                    className="w-full bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded transition-colors font-semibold"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(problem.id)}
-                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors font-semibold"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors font-semibold"
                   >
                     Delete
                   </button>
