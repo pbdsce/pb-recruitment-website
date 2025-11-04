@@ -1,6 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
 import { useLeaderboard } from '../hooks/useLeaderboard';
-import { ContestHeader } from '../components/ContestHeader';
 import { LeaderboardTable } from '../components/LeaderboardTable';
 
 export const ContestLeaderboardPage = () => {
@@ -60,10 +59,7 @@ export const ContestLeaderboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black w-full">
-      <ContestHeader contest={contest} />
-
-      <div className="w-full px-4 py-6">
+    <div className="w-full px-4 py-6">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm font-['DM_Sans']">
@@ -108,6 +104,5 @@ export const ContestLeaderboardPage = () => {
           </div>
         )}
       </div>
-    </div>
   );
 };
