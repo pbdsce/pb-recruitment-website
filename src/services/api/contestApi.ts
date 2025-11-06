@@ -41,6 +41,57 @@ class ContestApiService {
     );
     return response.json();
   }
+
+  async submitCodeSolution(
+    contestId: string,
+    problemId: string,
+    code: string,
+    language: string
+  ): Promise<SubmissionResponse> {
+    const response = await this.fetchWithError(
+      `${API_BASE_URL}/contests/${contestId}/problems/${problemId}/submit`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          language,
+        }),
+      }
+    );
+    return response.json();
+  }
+
+  async submitMCQAnswer(
+    contestId: string,
+    problemId: string,
+    selectedOption: number
+  ): Promise<SubmissionResponse> {
+    const response = await this.fetchWithError(
+      `${API_BASE_URL}/contests/${contestId}/problems/${problemId}/submit`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          answer: selectedOption,
+        }),
+      }
+    );
+    return response.json();
+  }
+}
+
+export interface SubmissionResponse {
+  success: boolean;
+  message?: string;
+  score?: number;
+  total_score?: number;
+  test_cases_passed?: number;
+  total_test_cases?: number;
 }
 
 export const contestApi = new ContestApiService();

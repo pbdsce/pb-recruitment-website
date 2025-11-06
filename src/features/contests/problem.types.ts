@@ -7,6 +7,20 @@ export interface Problem {
   score: number;
   type: ProblemType;
   answer?: number[];
+  description?: string;
+  constraints?: string[];
+  input_format?: string;
+  output_format?: string;
+  examples?: ProblemExample[];
+  time_limit?: string;
+  memory_limit?: string;
+  options?: string[];  // For MCQ questions
+}
+
+export interface ProblemExample {
+  input: string;
+  output: string;
+  explanation?: string;
 }
 
 export interface ProblemFilters {
