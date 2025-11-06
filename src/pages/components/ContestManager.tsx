@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Contest {
   id: string;
@@ -16,11 +17,10 @@ type RunningStatus = "upcoming" | "open" | "closed";
 interface ContestManagerProps {
   contests: Contest[];
   setContests: (contests: Contest[]) => void;
-  onSelectContest: (contestId: string) => void;
-  onDeleteContest?: (contestId: string) => void;
 }
 
-const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, onSelectContest, onDeleteContest }) => {
+const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }) => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContest, setEditingContest] = useState<Contest | null>(null);
   const [formData, setFormData] = useState<Contest>({
@@ -88,7 +88,6 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this contest?")) {
       setContests(contests.filter((c) => c.id !== id));
-      if (onDeleteContest) onDeleteContest(id);
     }
   };
 
@@ -125,7 +124,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
         <h2 className="text-2xl md:text-3xl font-bold text-green-400">Contest Management</h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold transition-all duration-200"
+          className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-green-500/50"
         >
            Create Contest
         </button>
@@ -191,7 +190,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
                   <div className="flex flex-col gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
                     <button
                       onClick={() => handleEdit(contest)}
-                      className="w-full bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded transition-colors font-semibold"
+                      className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors font-semibold"
                     >
                       Edit
                     </button>
@@ -202,10 +201,16 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
                       Delete
                     </button>
                     <button
-                      onClick={() => onSelectContest(contest.id)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-semibold"
+                      onClick={() => navigate(`/admin/contest/${contest.id}/problems`)}
+                      className="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded transition-colors font-semibold"
                     >
-                      Manage
+                      Manage Problems
+                    </button>
+                    <button
+                      onClick={() => navigate(`/admin/contest/${contest.id}/contestants`)}
+                      className="w-full bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded transition-colors font-semibold"
+                    >
+                      View Contestants
                     </button>
                   </div>
                 </div>
@@ -327,14 +332,14 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests, 
               <div className="flex space-x-4 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-6 py-3 rounded-lg font-semibold transition-all duration-200"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-green-500/50"
                 >
                   {editingContest ? "Update Contest" : "Create Contest"}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-200"
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-200"
                 >
                   Cancel
                 </button>

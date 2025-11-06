@@ -10,12 +10,11 @@ interface Contestant {
 }
 
 interface ContestantManagerProps {
-  contestId: string;
   contestants: Contestant[];
   setContestants: (contestants: Contestant[]) => void;
 }
 
-const ContestantManager: React.FC<ContestantManagerProps> = ({ contestId, contestants, setContestants }) => {
+const ContestantManager: React.FC<ContestantManagerProps> = ({ contestants, setContestants }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("All");
 
@@ -48,11 +47,6 @@ const ContestantManager: React.FC<ContestantManagerProps> = ({ contestId, contes
 
   return (
     <div className="space-y-6">
-      <div className="mb-4">
-        <h3 className="text-2xl font-bold text-green-400">View Contestants</h3>
-        <p className="text-gray-400 mt-1">Contest ID: <span className="text-green-400">{contestId}</span></p>
-      </div>
-
       <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

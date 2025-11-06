@@ -14,6 +14,8 @@ import { Signup } from "./pages/SignUp";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Profile } from "./pages/Profile";
 import Admin from "./pages/Admin";
+import AdminContestProblems from "./pages/AdminContestProblems";
+import AdminContestContestants from "./pages/AdminContestContestants";
 
 const App: React.FC = () => {
   return (
@@ -33,6 +35,8 @@ const App: React.FC = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/contests/:contestId/leaderboard" element={<ContestLeaderboardPage />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/contest/:contestId/problems" element={<AdminContestProblems />} />
+        <Route path="/admin/contest/:contestId/contestants" element={<AdminContestContestants />} />
       </Routes>
   );
 };

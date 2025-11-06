@@ -8,12 +8,11 @@ interface Problem {
 }
 
 interface ProblemManagerProps {
-  contestId: string;
   problems: Problem[];
   setProblems: (problems: Problem[]) => void;
 }
 
-const ProblemManager: React.FC<ProblemManagerProps> = ({ contestId, problems, setProblems }) => {
+const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
   const [formData, setFormData] = useState<Problem>({
@@ -68,13 +67,10 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ contestId, problems, se
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
-        <div>
-          <h3 className="text-gray-400 mt-1">Contest ID: <span className="text-green-400">{contestId}</span></h3>
-        </div>
+      <div className="flex justify-end mb-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-6 py-3 rounded-lg font-semibold transition-all duration-200"
+          className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-6 py-3 rounded-lg font-semibold transition-all duration-200"
         >
           + Add Problem
         </button>
@@ -108,7 +104,7 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ contestId, problems, se
                 <div className="flex flex-col gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
                   <button
                     onClick={() => handleEdit(problem)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded transition-colors font-semibold"
+                    className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors font-semibold"
                   >
                     Edit
                   </button>
