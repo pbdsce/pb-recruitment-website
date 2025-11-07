@@ -5,6 +5,13 @@ interface Problem {
   title: string;
   description: string;
   points: number;
+  type: "code" | "mcq";
+  // MCQ specific fields
+  options?: string[];
+  correctAnswer?: number; 
+  expectedOutput?: string;
+  timeLimit?: number; 
+  memoryLimit?: number; 
 }
 
 interface ProblemManagerProps {
@@ -20,6 +27,12 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
     title: "",
     description: "",
     points: 100,
+    type: "code",
+    options: ["", "", "", ""],
+    correctAnswer: 0,
+    expectedOutput: "",
+    timeLimit: 1,
+    memoryLimit: 256,
   });
 
   const handleInputChange = (
@@ -28,7 +41,26 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "points" ? parseInt(value) : value,
+      [name]: name === "points" || name === "timeLimit" || name === "memoryLimit" || name === "correctAnswer"
+        ? parseInt(value)
+        : value,
+    }));
+  };
+
+  const handleOptionChange = (index: number, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      options: prev.options?.map((opt, i) => (i === index ? value : opt)) || ["", "", "", ""],
+    }));
+  };
+
+  const handleTypeChange = (type: "code" | "mcq") => {
+    setFormData((prev) => ({
+      ...prev,
+      type,
+      ...(type === "mcq"
+        ? { options: ["", "", "", ""], correctAnswer: 0 }
+        : { expectedOutput: "", timeLimit: 1, memoryLimit: 256 }),
     }));
   };
 
@@ -60,6 +92,12 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
       title: "",
       description: "",
       points: 100,
+      type: "code",
+      options: ["", "", "", ""],
+      correctAnswer: 0,
+      expectedOutput: "",
+      timeLimit: 1,
+      memoryLimit: 256,
     });
     setEditingProblem(null);
     setIsModalOpen(false);
@@ -92,6 +130,13 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
                   <div className="flex items-center gap-4 mb-2">
                     <h4 className="text-xl font-bold text-green-400">{problem.title}</h4>
                     <span className="text-sm text-green-400">{problem.points} points</span>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      problem.type === 'code' 
+                        ? 'bg-blue-900 text-blue-300 border border-blue-700' 
+                        : 'bg-purple-900 text-purple-300 border border-purple-700'
+                    }`}>
+                      {problem.type === 'code' ? 'CODE' : 'MCQ'}
+                    </span>
                   </div>
                   <p className="text-gray-400 mb-4 line-clamp-2">{problem.description}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
@@ -99,6 +144,18 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
                       <span className="text-gray-500">Problem ID:</span>
                       <span className="text-gray-300 ml-2">{problem.id}</span>
                     </div>
+                    {problem.type === 'code' && (
+                      <>
+                        <div>
+                          <span className="text-gray-500">Time Limit:</span>
+                          <span className="text-gray-300 ml-2">{problem.timeLimit}s</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Memory Limit:</span>
+                          <span className="text-gray-300 ml-2">{problem.memoryLimit}MB</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 md:ml-4 w-full md:w-auto mt-2 md:mt-0">
@@ -140,6 +197,21 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
                   required
                 />
               </div>
+              
+              <div>
+                <label className="block text-gray-400 mb-2">Problem Type</label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={(e) => handleTypeChange(e.target.value as "code" | "mcq")}
+                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                  required
+                >
+                  <option value="code">Code Problem</option>
+                  <option value="mcq">MCQ</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-gray-400 mb-2">Problem Title</label>
                 <input
@@ -162,6 +234,86 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
                   required
                 />
               </div>
+
+              {formData.type === "mcq" && (
+                <>
+                  <div className="space-y-3">
+                    <label className="block text-gray-400 mb-2">Options</label>
+                    {formData.options?.map((option, index) => (
+                      <div key={index}>
+                        <label className="block text-gray-500 text-sm mb-1">
+                          Option {index + 1}
+                        </label>
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                          required
+                          placeholder={`Enter option ${index + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 mb-2">Correct Answer</label>
+                    <select
+                      name="correctAnswer"
+                      value={formData.correctAnswer}
+                      onChange={handleInputChange}
+                      className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                      required
+                    >
+                      <option value={0}>Option 1</option>
+                      <option value={1}>Option 2</option>
+                      <option value={2}>Option 3</option>
+                      <option value={3}>Option 4</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {formData.type === "code" && (
+                <>
+                  <div>
+                    <label className="block text-gray-400 mb-2">Expected Output</label>
+                    <textarea
+                      name="expectedOutput"
+                      value={formData.expectedOutput}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none font-mono text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-400 mb-2">Time Limit (seconds)</label>
+                      <input
+                        type="number"
+                        name="timeLimit"
+                        value={formData.timeLimit}
+                        onChange={handleInputChange}
+                        min="1"
+                        step="0.1"
+                        className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-2">Memory Limit (MB)</label>
+                      <input
+                        type="number"
+                        name="memoryLimit"
+                        value={formData.memoryLimit}
+                        onChange={handleInputChange}
+                        min="1"
+                        className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-400 mb-2">Points</label>
