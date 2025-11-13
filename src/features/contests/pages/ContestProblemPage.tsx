@@ -75,28 +75,23 @@ export const ContestProblemPage = () => {
   const handleCodeSubmit = async (code: string, language: string) => {
     try {
       const result = await contestApi.submitCodeSolution(contestId, problemId, code, language);
-      if (result.success) {
-        alert(`Success! Score: ${result.score}/${result.total_score}\nTest cases passed: ${result.test_cases_passed}/${result.total_test_cases}`);
-      } else {
-        alert(`Submission failed: ${result.message}`);
-      }
+      const submissionId = result.submission_id;
+      alert(`Submission received! Submission ID: ${submissionId}\nProcessing your code...`);
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Failed to submit code. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit code';
+      alert(`Submission failed: ${errorMessage}`);
     }
   };
 
   const handleMCQSubmit = async (selectedOption: number) => {
     try {
       const result = await contestApi.submitMCQAnswer(contestId, problemId, selectedOption);
-      if (result.success) {
-        alert(`Success! Score: ${result.score}/${result.total_score}`);
-      } else {
-        alert(`Incorrect answer. ${result.message || ''}`);
-      }
+      alert(`Answer submitted successfully! Submission ID: ${result.submission_id}`);
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Failed to submit answer. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit answer';
+      alert(`Submission failed: ${errorMessage}`);
     }
   };
 
