@@ -73,26 +73,11 @@ export const ContestProblemPage = () => {
   }
 
   const handleCodeSubmit = async (code: string, language: string) => {
-    try {
-      const result = await contestApi.submitCodeSolution(contestId, problemId, code, language);
-      const submissionId = result.submission_id;
-      alert(`Submission received! Submission ID: ${submissionId}\nProcessing your code...`);
-    } catch (error) {
-      console.error('Submission error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to submit code';
-      alert(`Submission failed: ${errorMessage}`);
-    }
+    await contestApi.submitCodeSolution(contestId, problemId, code, language);
   };
 
   const handleMCQSubmit = async (selectedOption: number) => {
-    try {
-      const result = await contestApi.submitMCQAnswer(contestId, problemId, selectedOption);
-      alert(`Answer submitted successfully! Submission ID: ${result.submission_id}`);
-    } catch (error) {
-      console.error('Submission error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to submit answer';
-      alert(`Submission failed: ${errorMessage}`);
-    }
+    await contestApi.submitMCQAnswer(contestId, problemId, selectedOption);
   };
 
   return (
