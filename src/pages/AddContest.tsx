@@ -79,6 +79,7 @@ const AddContest: React.FC = () => {
             navigate("/admin");
           }
         } catch (error) {
+          console.error("Error fetching contest:", error);
           toast.error("Error loading contest");
           navigate("/admin");
         } finally {
@@ -90,13 +91,19 @@ const AddContest: React.FC = () => {
   }, [contestId, isEditMode, navigate]);
 
   const dateToTimestamp = (dateString: string): number => {
-    return Math.floor(new Date(dateString).getTime() / 1000);
+    return new Date(dateString).getTime();
   };
 
   const timestampToDateInput = (timestamp: number): string => {
     if (!timestamp) return "";
-    const date = new Date(timestamp * 1000);
-    return date.toISOString().slice(0, 16);
+    const date = new Date(timestamp);
+    // Get local time components and format for datetime-local
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -151,6 +158,7 @@ const AddContest: React.FC = () => {
       }
       navigate("/admin");
     } catch (error: any) {
+      console.error("Error saving contest:", error);
       const errorMessage = error?.response?.data?.message || "Failed to save contest";
       toast.error(errorMessage);
     } finally {
@@ -289,10 +297,13 @@ const AddContest: React.FC = () => {
                 <h3 className="text-xl font-bold text-green-400 mb-4">
                   Registration Period
                 </h3>
+                <p className="text-gray-500 text-sm mb-4">
+                  All times are in IST (Indian Standard Time)
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-gray-400 mb-2 font-semibold">
-                      Registration Start Time *
+                      Registration Start Time (IST) *
                     </label>
                     <input
                       type="datetime-local"
@@ -311,7 +322,7 @@ const AddContest: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-gray-400 mb-2 font-semibold">
-                      Registration End Time *
+                      Registration End Time (IST) *
                     </label>
                     <input
                       type="datetime-local"
@@ -335,10 +346,13 @@ const AddContest: React.FC = () => {
                 <h3 className="text-xl font-bold text-green-400 mb-4">
                   Contest Period
                 </h3>
+                <p className="text-gray-500 text-sm mb-4">
+                  All times are in IST (Indian Standard Time)
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-gray-400 mb-2 font-semibold">
-                      Contest Start Time *
+                      Contest Start Time (IST) *
                     </label>
                     <input
                       type="datetime-local"
@@ -357,7 +371,7 @@ const AddContest: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-gray-400 mb-2 font-semibold">
-                      Contest End Time *
+                      Contest End Time (IST) *
                     </label>
                     <input
                       type="datetime-local"

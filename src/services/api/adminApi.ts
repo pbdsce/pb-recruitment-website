@@ -68,7 +68,7 @@ class AdminApiService {
 
   async getContestById(contestId: string): Promise<Contest | null> {
     try {
-      const response = await this.axiosInstance.get<any>(`/admin/contests/${contestId}`);
+      const response = await this.axiosInstance.get<any>(`/admin/contest/${contestId}`);
       return new Contest(response.data);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {

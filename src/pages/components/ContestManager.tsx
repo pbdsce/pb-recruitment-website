@@ -16,21 +16,21 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
   const navigate = useNavigate();
 
   const getRegistrationStatus = (contest: Contest): RegistrationStatus => {
-    const now = Math.floor(Date.now() / 1000);
+    const now = Date.now();
     if (contest.registration_start_time > now) return "upcoming";
     if (contest.registration_start_time <= now && contest.registration_end_time >= now) return "open";
     return "closed";
   };
 
   const getRunningStatus = (contest: Contest): RunningStatus => {
-    const now = Math.floor(Date.now() / 1000);
+    const now = Date.now();
     if (contest.start_time > now) return "upcoming";
     if (contest.start_time <= now && contest.end_time >= now) return "open";
     return "closed";
   };
 
   const formatTimestamp = (timestamp: number): string => {
-    return new Date(timestamp * 1000).toLocaleString();
+    return new Date(timestamp).toLocaleString('en-IN');
   };
 
   const handleEdit = (contest: Contest) => {
