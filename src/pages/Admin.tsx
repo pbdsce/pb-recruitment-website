@@ -3,7 +3,6 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
 import AdminHero from "./components/AdminHero";
 import ContestManager from "./components/ContestManager";
-import { contestsListData } from "../data/contestsData";
 import type { Contest } from "@/models/contest";
 import { adminApi } from "@/services/api/adminApi";
 import { toast } from "react-toastify";
@@ -32,14 +31,20 @@ const Admin: React.FC = () => {
     <div className="bg-black text-gray-300 min-h-screen flex flex-col">
       <Navbar />
       <AdminHero />
-      
+
       <div className="flex-grow container mx-auto px-4 py-4">
-        <ContestManager
-          contests={contests}
-          setContests={setContests}
-        />
+        {
+          isLoading ? (
+            <p>Loading contests...</p>
+          ): (
+            <ContestManager
+              contests = { contests }
+              setContests = { setContests }
+            />
+          )
+        }
       </div>
-      
+
       <Footer />
     </div>
   );
