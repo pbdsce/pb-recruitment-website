@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Contest } from "@/models/contest";
+import { adminApi } from "@/services/api/adminApi";
+import { toast } from "react-toastify";
 
 type RegistrationStatus = "upcoming" | "open" | "closed";
 type RunningStatus = "upcoming" | "open" | "closed";
@@ -35,9 +37,15 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
     navigate(`/admin/contest/${contest.id}/edit`);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this contest?")) {
-      setContests(contests.filter((c) => c.id !== id));
+      try {
+        await adminApi.deleteContest(id);
+        setContests(contests.filter((c) => c.id !== id));
+        toast.success("Contest deleted successfully.");
+      } catch (error) {
+        toast.error("Error deleting contest. Please try again later.");
+      }
     }
   };
 
