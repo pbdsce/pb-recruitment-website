@@ -137,6 +137,20 @@ class AdminApiService {
       action: 'unregister',
     });
   }
+
+  async createContest(contest: Contest): Promise<Contest> {
+    const response = await this.axiosInstance.post<any>('/admin/contest', contest);
+    return new Contest(response.data);
+  }
+
+  async updateContest(contest: Contest): Promise<Contest> {
+    const response = await this.axiosInstance.put<any>(`/admin/contest/${contest.id}`, contest);
+    return new Contest(response.data);
+  }
+
+  async deleteContest(contestId: string): Promise<void> {
+    await this.axiosInstance.delete(`/admin/contest/${contestId}`);
+  }
 }
 
 export interface SubmissionResponse {

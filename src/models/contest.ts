@@ -6,7 +6,7 @@ export class Contest {
     end_time: number;
     registration_start_time: number;
     registration_end_time: number;
-    eligible_to: string;
+    eligible_to: number[];
 
     constructor(data: {
         id: string;
@@ -16,7 +16,7 @@ export class Contest {
         end_time: number;
         registration_start_time: number;
         registration_end_time: number;
-        eligible_to: string;
+        eligible_to: number[];
     }) {
         this.id = data.id;
         this.name = data.name;

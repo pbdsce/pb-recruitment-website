@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Contest } from "@/models/contest";
 
@@ -12,18 +12,6 @@ interface ContestManagerProps {
 
 const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }) => {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingContest, setEditingContest] = useState<Contest | null>(null);
-  const [formData, setFormData] = useState<Contest>(new Contest({
-    id: "",
-    name: "",
-    description: "",
-    registration_start_time: 0,
-    registration_end_time: 0,
-    start_time: 0,
-    end_time: 0,
-    eligible_to: "",
-  }));
 
   const getRegistrationStatus = (contest: Contest): RegistrationStatus => {
     const now = Math.floor(Date.now() / 1000);
@@ -43,59 +31,14 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
     return new Date(timestamp * 1000).toLocaleString();
   };
 
-  const dateToTimestamp = (dateString: string): number => {
-    return Math.floor(new Date(dateString).getTime() / 1000);
-  };
-
-  const timestampToDateInput = (timestamp: number): string => {
-    if (!timestamp) return "";
-    const date = new Date(timestamp * 1000);
-    return date.toISOString().slice(0, 16);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => new Contest({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingContest) {
-      setContests(contests.map((c) => (c.id === editingContest.id ? formData : c)));
-    } else {
-      setContests([...contests, formData]);
-    }
-    resetForm();
-  };
-
   const handleEdit = (contest: Contest) => {
-    setEditingContest(contest);
-    setFormData(contest);
-    setIsModalOpen(true);
+    navigate(`/admin/contest/${contest.id}/edit`);
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this contest?")) {
       setContests(contests.filter((c) => c.id !== id));
     }
-  };
-
-  const resetForm = () => {
-    setFormData(new Contest({
-      id: "",
-      name: "",
-      registration_start_time: 0,
-      registration_end_time: 0,
-      start_time: 0,
-      end_time: 0,
-      eligible_to: "",
-      description: "",
-    }));
-    setEditingContest(null);
-    setIsModalOpen(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -116,7 +59,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl md:text-3xl font-bold text-green-400">Contest Management</h2>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => navigate('/admin/contest/create')}
           className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-green-500/50"
         >
           Create Contest
@@ -212,135 +155,6 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
           })
         )}
       </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg p-4 sm:p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-green-500">
-            <h3 className="text-2xl font-bold text-green-400 mb-6">
-              {editingContest ? "Edit Contest" : "Create New Contest"}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-400 mb-2">Contest ID</label>
-                  <input
-                    type="text"
-                    name="id"
-                    value={formData.id}
-                    onChange={handleInputChange}
-                    disabled={!!editingContest}
-                    placeholder="first-years"
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none disabled:opacity-50"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 mb-2">Eligible To</label>
-                  <input
-                    type="text"
-                    name="eligible_to"
-                    value={formData.eligible_to}
-                    onChange={handleInputChange}
-                    placeholder="1st Year / 2nd & 3rd Year"
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-gray-400 mb-2">Contest Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-400 mb-2">Registration Start Time</label>
-                  <input
-                    type="datetime-local"
-                    value={timestampToDateInput(formData.registration_start_time)}
-                    onChange={(e) =>
-                      setFormData((prev) => new Contest({
-                        ...prev,
-                        registration_start_time: dateToTimestamp(e.target.value),
-                      }))
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 mb-2">Registration End Time</label>
-                  <input
-                    type="datetime-local"
-                    value={timestampToDateInput(formData.registration_end_time)}
-                    onChange={(e) =>
-                      setFormData((prev) => new Contest({
-                        ...prev,
-                        registration_end_time: dateToTimestamp(e.target.value),
-                      }))
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-400 mb-2">Contest Start Time</label>
-                  <input
-                    type="datetime-local"
-                    value={timestampToDateInput(formData.start_time)}
-                    onChange={(e) =>
-                      setFormData((prev) => new Contest({
-                        ...prev,
-                        start_time: dateToTimestamp(e.target.value),
-                      }))
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 mb-2">Contest End Time</label>
-                  <input
-                    type="datetime-local"
-                    value={timestampToDateInput(formData.end_time)}
-                    onChange={(e) =>
-                      setFormData((prev) => new Contest({
-                        ...prev,
-                        end_time: dateToTimestamp(e.target.value),
-                      }))
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-green-500/50"
-                >
-                  {editingContest ? "Update Contest" : "Create Contest"}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-200"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
