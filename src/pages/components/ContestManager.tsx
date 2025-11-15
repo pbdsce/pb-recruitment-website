@@ -1,15 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-interface Contest {
-  id: string;
-  name: string;
-  registrationStartTime: number;
-  registrationEndTime: number;
-  startTime: number;
-  endTime: number;
-  eligibleTo: string;
-}
+import { Contest } from "@/models/contest";
 
 type RegistrationStatus = "upcoming" | "open" | "closed";
 type RunningStatus = "upcoming" | "open" | "closed";
@@ -23,27 +14,28 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContest, setEditingContest] = useState<Contest | null>(null);
-  const [formData, setFormData] = useState<Contest>({
+  const [formData, setFormData] = useState<Contest>(new Contest({
     id: "",
     name: "",
-    registrationStartTime: 0,
-    registrationEndTime: 0,
-    startTime: 0,
-    endTime: 0,
-    eligibleTo: "",
-  });
+    description: "",
+    registration_start_time: 0,
+    registration_end_time: 0,
+    start_time: 0,
+    end_time: 0,
+    eligible_to: "",
+  }));
 
   const getRegistrationStatus = (contest: Contest): RegistrationStatus => {
     const now = Math.floor(Date.now() / 1000);
-    if (contest.registrationStartTime > now) return "upcoming";
-    if (contest.registrationStartTime <= now && contest.registrationEndTime >= now) return "open";
+    if (contest.registration_start_time > now) return "upcoming";
+    if (contest.registration_start_time <= now && contest.registration_end_time >= now) return "open";
     return "closed";
   };
 
   const getRunningStatus = (contest: Contest): RunningStatus => {
     const now = Math.floor(Date.now() / 1000);
-    if (contest.startTime > now) return "upcoming";
-    if (contest.startTime <= now && contest.endTime >= now) return "open";
+    if (contest.start_time > now) return "upcoming";
+    if (contest.start_time <= now && contest.end_time >= now) return "open";
     return "closed";
   };
 
@@ -63,7 +55,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData((prev) => new Contest({
       ...prev,
       [name]: value,
     }));
@@ -92,15 +84,16 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
   };
 
   const resetForm = () => {
-    setFormData({
+    setFormData(new Contest({
       id: "",
       name: "",
-      registrationStartTime: 0,
-      registrationEndTime: 0,
-      startTime: 0,
-      endTime: 0,
-      eligibleTo: "",
-    });
+      registration_start_time: 0,
+      registration_end_time: 0,
+      start_time: 0,
+      end_time: 0,
+      eligible_to: "",
+      description: "",
+    }));
     setEditingContest(null);
     setIsModalOpen(false);
   };
@@ -126,7 +119,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
           onClick={() => setIsModalOpen(true)}
           className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-green-500/50"
         >
-           Create Contest
+          Create Contest
         </button>
       </div>
 
@@ -148,7 +141,7 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                   <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-4 mb-3">
                       <h3 className="text-lg md:text-xl font-bold text-green-400 break-words">{contest.name}</h3>
-                      <span className="text-sm text-gray-400 truncate">({contest.eligibleTo})</span>
+                      <span className="text-sm text-gray-400 truncate">({contest.eligible_to})</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
                       <div>
@@ -171,19 +164,19 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-gray-800 p-4 rounded">
                       <div>
                         <p className="text-gray-500">Registration Start:</p>
-                        <p className="text-gray-300">{formatTimestamp(contest.registrationStartTime)}</p>
+                        <p className="text-gray-300">{formatTimestamp(contest.registration_start_time)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Registration End:</p>
-                        <p className="text-gray-300">{formatTimestamp(contest.registrationEndTime)}</p>
+                        <p className="text-gray-300">{formatTimestamp(contest.registration_end_time)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Contest Start:</p>
-                        <p className="text-gray-300">{formatTimestamp(contest.startTime)}</p>
+                        <p className="text-gray-300">{formatTimestamp(contest.start_time)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Contest End:</p>
-                        <p className="text-gray-300">{formatTimestamp(contest.endTime)}</p>
+                        <p className="text-gray-300">{formatTimestamp(contest.end_time)}</p>
                       </div>
                     </div>
                   </div>
@@ -245,8 +238,8 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                   <label className="block text-gray-400 mb-2">Eligible To</label>
                   <input
                     type="text"
-                    name="eligibleTo"
-                    value={formData.eligibleTo}
+                    name="eligible_to"
+                    value={formData.eligible_to}
                     onChange={handleInputChange}
                     placeholder="1st Year / 2nd & 3rd Year"
                     className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
@@ -270,11 +263,11 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                   <label className="block text-gray-400 mb-2">Registration Start Time</label>
                   <input
                     type="datetime-local"
-                    value={timestampToDateInput(formData.registrationStartTime)}
+                    value={timestampToDateInput(formData.registration_start_time)}
                     onChange={(e) =>
-                      setFormData((prev) => ({
+                      setFormData((prev) => new Contest({
                         ...prev,
-                        registrationStartTime: dateToTimestamp(e.target.value),
+                        registration_start_time: dateToTimestamp(e.target.value),
                       }))
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
@@ -285,11 +278,11 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                   <label className="block text-gray-400 mb-2">Registration End Time</label>
                   <input
                     type="datetime-local"
-                    value={timestampToDateInput(formData.registrationEndTime)}
+                    value={timestampToDateInput(formData.registration_end_time)}
                     onChange={(e) =>
-                      setFormData((prev) => ({
+                      setFormData((prev) => new Contest({
                         ...prev,
-                        registrationEndTime: dateToTimestamp(e.target.value),
+                        registration_end_time: dateToTimestamp(e.target.value),
                       }))
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
@@ -302,11 +295,11 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                   <label className="block text-gray-400 mb-2">Contest Start Time</label>
                   <input
                     type="datetime-local"
-                    value={timestampToDateInput(formData.startTime)}
+                    value={timestampToDateInput(formData.start_time)}
                     onChange={(e) =>
-                      setFormData((prev) => ({
+                      setFormData((prev) => new Contest({
                         ...prev,
-                        startTime: dateToTimestamp(e.target.value),
+                        start_time: dateToTimestamp(e.target.value),
                       }))
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
@@ -317,11 +310,11 @@ const ContestManager: React.FC<ContestManagerProps> = ({ contests, setContests }
                   <label className="block text-gray-400 mb-2">Contest End Time</label>
                   <input
                     type="datetime-local"
-                    value={timestampToDateInput(formData.endTime)}
+                    value={timestampToDateInput(formData.end_time)}
                     onChange={(e) =>
-                      setFormData((prev) => ({
+                      setFormData((prev) => new Contest({
                         ...prev,
-                        endTime: dateToTimestamp(e.target.value),
+                        end_time: dateToTimestamp(e.target.value),
                       }))
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"

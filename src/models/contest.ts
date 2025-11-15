@@ -6,6 +6,7 @@ export class Contest {
     end_time: number;
     registration_start_time: number;
     registration_end_time: number;
+    eligible_to: string;
 
     constructor(data: {
         id: string;
@@ -15,6 +16,7 @@ export class Contest {
         end_time: number;
         registration_start_time: number;
         registration_end_time: number;
+        eligible_to: string;
     }) {
         this.id = data.id;
         this.name = data.name;
@@ -23,6 +25,7 @@ export class Contest {
         this.end_time = data.end_time;
         this.registration_start_time = data.registration_start_time;
         this.registration_end_time = data.registration_end_time;
+        this.eligible_to = data.eligible_to;
     }
 
     isRegistrationOpen(): boolean {
