@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { signUpUser, type SignUpData } from "../lib/auth";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -8,6 +8,28 @@ import { Popup } from "../components/ui/popup";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { auth } from "../lib/firebase";
 
+const BRANCHES = [
+  "Artificial Intelligence and Machine Learning",
+  "Aeronautical Engineering",
+  "Automobile Engineering",
+  "Biotechnology",
+  "Computer Science and Engineering",
+  "Computer Science and Business Systems",
+  "Computer Science & Engineering (Cyber Security)",
+  "Computer Science & Engineering (Data Science)",
+  "Computer Science & Engineering (IoT and Cyber Security Including Blockchain)",
+  "Computer Science and Design",
+  "Chemical Engineering",
+  "Civil Engineering",
+  "Electrical & Electronics Engineering",
+  "Electronics & Communication Engineering",
+  "Electronics and Instrumentation Engineering",
+  "Electronics and Telecommunication Engineering",
+  "Information Science and Engineering",
+  "Mechanical Engineering",
+  "Medical Electronics Engineering",
+  "Robotics and Artificial Intelligence"
+];
 
 export const Signup: React.FC = () => {
   const [formData, setFormData] = useState<SignUpData & { confirmPassword: string }>({
@@ -22,6 +44,9 @@ export const Signup: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showBranchDropdown, setShowBranchDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const [popup, setPopup] = useState<{
     isOpen: boolean;
     type: "success" | "error";
@@ -42,6 +67,18 @@ export const Signup: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowBranchDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -51,6 +88,11 @@ export const Signup: React.FC = () => {
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  const handleBranchSelect = (branch: string) => {
+    setFormData({ ...formData, branch });
+    setShowBranchDropdown(false);
   };
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -211,12 +253,12 @@ export const Signup: React.FC = () => {
                 <div className="space-y-2">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300">Full Name:</label>
                   <input id="name" name="name" value={formData.name} onChange={handleChange} required placeholder="Enter your full name"
-                    className="w-full px-4 py-3 border border-white rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" />
+                    className="w-full px-4 py-3 border border-white rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-transparent" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="joiningYear" className="block text-sm font-medium text-gray-300">Year of Study:</label>
                   <select id="joiningYear" name="joiningYear" value={formData.joiningYear} onChange={handleChange} required
-                    className="w-full px-4 py-3 bg-black border border-white rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
+                    className="w-full px-4 py-3 bg-black border border-white rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 cursor-pointer">
                     <option value="">Select Year of Study</option>
                     <option value="1st year">1st year</option>
                     <option value="2nd year">2nd year</option>
@@ -230,42 +272,74 @@ export const Signup: React.FC = () => {
                 {errors.id && <p className="text-red-500 text-sm font-dm-sans">{errors.id}</p>}
                 <input id="id" name="id" value={formData.id} onChange={handleChange} required
                   placeholder={isFirstYear ? "Enter application number" : "Enter USN (e.g., 1DS24CS000)"}
-                  className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${errors.id ? 'border-red-500' : 'border-white'}`} />
+                  className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-transparent ${errors.id ? 'border-red-500' : 'border-white'}`} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email:</label>
                   <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required placeholder="Enter your email"
-                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-white'}`} />
+                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-transparent ${errors.email ? 'border-red-500' : 'border-white'}`} />
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="mobile" className="block text-sm font-medium text-gray-300">Mobile Number:</label>
                   <input id="mobile" name="mobile" type="tel" value={formData.mobile} onChange={handleChange} required placeholder="Enter mobile number"
-                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${errors.mobile ? 'border-red-500' : 'border-white'}`} />
+                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-transparent ${errors.mobile ? 'border-red-500' : 'border-white'}`} />
                   {errors.mobile && <p className="text-red-500 text-sm font-dm-sans">{errors.mobile}</p>}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="branch" className="block text-sm font-medium text-gray-300">Branch:</label>
-                <input id="branch" name="branch" value={formData.branch} onChange={handleChange} required placeholder="Enter your branch"
-                  className="w-full px-4 py-3 border border-white rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" />
+              <div className="space-y-2" ref={dropdownRef}>
+                <label htmlFor="branch" className="block text-sm font-medium text-gray-300">
+                  Branch:
+                </label>
+                <div className="relative">
+                  <div 
+                    className="w-full px-4 py-3 bg-gray-800 border border-white rounded-lg text-white cursor-pointer flex items-center justify-between hover:bg-gray-750 transition-colors"
+                    onClick={() => setShowBranchDropdown(!showBranchDropdown)}
+                  >
+                    <span className={formData.branch ? "text-white" : "text-gray-400"}>
+                      {formData.branch || "Select Branch"}
+                    </span>
+                    <svg 
+                      className={`w-5 h-5 transition-transform ${showBranchDropdown ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  
+                  {showBranchDropdown && (
+                    <div className="absolute z-10 w-full mt-2 bg-gray-800 border border-white rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {BRANCHES.map((branch) => (
+                        <div
+                          key={branch}
+                          className="px-4 py-3 text-white hover:bg-gray-700 cursor-pointer transition-colors"
+                          onClick={() => handleBranchSelect(branch)}
+                        >
+                          {branch}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password:</label>
                   <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} required placeholder="Enter password"
-                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-white'}`} />
+                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-transparent ${errors.password ? 'border-red-500' : 'border-white'}`} />
                   {errors.password && <p className="text-red-500 text-sm font-dm-sans">{errors.password}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">Confirm Password:</label>
                   <input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required placeholder="Re-enter password"
-                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${errors.confirmPassword ? 'border-red-500' : 'border-white'}`} />
+                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-transparent ${errors.confirmPassword ? 'border-red-500' : 'border-white'}`} />
                   {errors.confirmPassword && <p className="text-red-500 text-sm font-dm-sans">{errors.confirmPassword}</p>}
                 </div>
               </div>

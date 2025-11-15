@@ -1,9 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
-import type { ContestDetail } from "../../data/contestsData";
+import type { Contest } from "@/models/contest";
 
 interface ContestHeroProps {
-  contest: ContestDetail;
+  contest: Contest;
 }
 
 const ContestHero: React.FC<ContestHeroProps> = ({ contest }) => {
@@ -49,12 +49,12 @@ const ContestHero: React.FC<ContestHeroProps> = ({ contest }) => {
             <div className="space-y-4">
               <div>
                 <p className="text-gray-400 text-sm mb-1">Duration</p>
-                <p className="text-white font-semibold text-lg">{contest.duration}</p>
+                <p className="text-white font-semibold text-lg">{contest.duration()}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm mb-1">Registration</p>
                 <p className="text-white font-semibold text-lg">
-                {contest.registrationOpen ? "Open" : "Closed"}
+                {contest.isRegistrationOpen() ? "Open" : "Closed"}
                 </p>
               </div>
             </div>

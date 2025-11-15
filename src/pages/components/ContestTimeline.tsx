@@ -2,10 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import type { ContestDetail } from "../../data/contestsData";
+import type { Contest } from "@/models/contest";
 
 interface ContestTimelineProps {
-  contest: ContestDetail;
+  contest: Contest;
 }
 
 const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
@@ -50,9 +50,9 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
                 {(() => {
                 // Timeline events array
                 const timelineEvents = [
-                    { label: "Starts in", time: contest.startTime, color: "bg-green-400" },
-                    { label: "Registration closes at", time: contest.registrationOpenUntil, color: "bg-yellow-400" },
-                    { label: "Ends at", time: contest.endTime, color: "bg-red-400" },
+                    { label: "Starts at", time: new Date(contest.start_time).toLocaleString('en-IN'), color: "bg-green-400" },
+                    { label: "Registration closes at", time: new Date(contest.registration_end_time).toLocaleString('en-IN'), color: "bg-yellow-400" },
+                    { label: "Ends at", time: new Date(contest.end_time).toLocaleString('en-IN'), color: "bg-red-400" },
                 ];
 
                 // Sort by actual time
@@ -88,25 +88,25 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
           >
             <h2 className="text-2xl font-anton text-beige mb-4">Ready to compete?</h2>
             <p className="text-gray-300 mb-6">
-              {contest.registrationOpen
+              {contest.isRegistrationOpen()
                 ? "Register now and secure your spot in this exciting contest!"
                 : "Registration for this contest has closed."}
             </p>
             <motion.button
-              whileHover={contest.registrationOpen ? { scale: 1.05 } : {}}
-              whileTap={contest.registrationOpen ? { scale: 0.95 } : {}}
+              whileHover={contest.isRegistrationOpen() ? { scale: 1.05 } : {}}
+              whileTap={contest.isRegistrationOpen() ? { scale: 0.95 } : {}}
               onClick={handleRegister}
-              disabled={!contest.registrationOpen}
+              disabled={!contest.isRegistrationOpen()}
               className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
-                contest.registrationOpen
+                contest.isRegistrationOpen()
                   ? "bg-green text-black hover:bg-green-600"
                   : "bg-gray-700 text-gray-400 cursor-not-allowed"
               }`}
             >
-              {contest.registrationOpen ? "Register" : "Registration Closed"}
-              {contest.registrationOpen && <ChevronRight size={20} />}
+              {contest.isRegistrationOpen() ? "Register" : "Registration Closed"}
+              {contest.isRegistrationOpen() && <ChevronRight size={20} />}
             </motion.button>
-            {contest.registrationOpen && (
+            {contest.isRegistrationOpen() && (
               <p className="text-xs text-gray-400 mt-4 text-center">
                 Free to register
               </p>

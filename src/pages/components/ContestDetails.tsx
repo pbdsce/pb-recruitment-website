@@ -1,11 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
-import type { ContestDetail } from "../../data/contestsData";
+import type { Contest } from "@/models/contest";
 
 interface ContestDetailsProps {
-  contest: ContestDetail;
+  contest: Contest;
 }
-
 
 const ContestDetails: React.FC<ContestDetailsProps> = ({ contest }) => {
   const slideUp = {
@@ -42,7 +41,7 @@ const ContestDetails: React.FC<ContestDetailsProps> = ({ contest }) => {
                   About This Contest
                 </h2>
                 <p className="text-gray-300 whitespace-pre-line leading-relaxed">
-                  {contest.fullDescription}
+                  {contest.description}
                 </p>
               </div>
 
