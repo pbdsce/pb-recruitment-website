@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import ContestCard from "./ContestCard";
-import type { Contest } from "../../data/contestsData";
+import type { Contest } from "@/models/contest";
 
 interface ContestGridProps {
   contests: Contest[];

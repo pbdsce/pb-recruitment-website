@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
-import type { Problem, LeaderboardEntry, Contest } from '@/features/contests/problem.types';
+import type { Problem, LeaderboardEntry } from '@/features/contests/problem.types';
+import { Contest } from "@/models/contest";
 import { auth } from '@/lib/firebase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -35,63 +36,15 @@ class ContestApiService {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response) {
-          const { status, data, headers } = error.response;
-          let errorMessage: string;
-          if (typeof data === 'string') {
-            errorMessage = data;
-          } else if (data && typeof data === 'object' && 'message' in data) {
-            errorMessage = String(data.message);
-          } else if (data && typeof data === 'object') {
-            errorMessage = JSON.stringify(data);
-          } else {
-            errorMessage = error.message || 'Unknown error';
-          }
-
-          const headersPlain: Record<string, string> = {};
-          if (headers) {
-            try {
-              if (typeof headers === 'object' && headers !== null) {
-                Object.keys(headers).forEach((key) => {
-                  try {
-                    const value = (headers as Record<string, unknown>)[key];
-                    if (value !== undefined && value !== null) {
-                      headersPlain[key] = Array.isArray(value) ? value.join(', ') : String(value);
-                    }
-                  } catch {
-                  }
-                });
-              }
-            } catch {
-            }
-          }
-
-          return Promise.reject({
-            status,
-            data,
-            headers: headersPlain,
-            message: errorMessage,
-          });
-        }
-
-        if (error.request) {
-          return Promise.reject({
-            status: 0,
-            message: 'Network error: No response from server',
-          });
-        }
-
-        return Promise.reject({
-          status: 0,
-          message: `Request error: ${error.message}`,
-        });
+        // Pass through the original error so you can handle specific status codes manually
+        return Promise.reject(error);
       }
     );
   }
 
   async getContestsList(page: number = 0): Promise<Contest[]> {
-    const response = await this.axiosInstance.get<Contest[]>(`/contests/list?page=${page}`);
-    return response.data;
+    const response = await this.axiosInstance.get<any[]>(`/contests/list?page=${page}`);
+    return response.data.map(c => new Contest(c));
   }
 
   async getContestProblems(contestId: string): Promise<Problem[]> {
@@ -109,9 +62,16 @@ class ContestApiService {
     return response.data;
   }
 
-  async getContestById(contestId: string): Promise<Contest> {
-    const response = await this.axiosInstance.get<Contest>(`/contests/${contestId}`);
-    return response.data;
+  async getContestById(contestId: string): Promise<Contest | null> {
+    try {
+      const response = await this.axiosInstance.get<any>(`/contests/${contestId}`);
+      return new Contest(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async submitCodeSolution(

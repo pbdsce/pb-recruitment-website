@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import ScrollToTop from './pages/components/ScrollToTop.tsx'
 import { AuthProvider } from './lib/AuthContext.tsx'
+import { ToastContainer } from 'react-toastify';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -12,6 +13,7 @@ createRoot(document.getElementById('root')!).render(
      <ScrollToTop />
       <AuthProvider>
         <App />
+        <ToastContainer />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

@@ -1,12 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
 import ContestListHero from "./components/ContestListHero";
 import ContestGrid from "./components/ContestGrid";
-import { contestsListData } from "../data/contestsData";
+import type { Contest } from "@/models/contest";
+import { contestApi } from "@/services/api/contestApi";
+import { Loader2 } from "lucide-react";
+import { toast } from 'react-toastify';
 
 const ContestList: React.FC = () => {
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchContests = async () => {
+      try {
+        setIsLoading(true);
+        const response = await contestApi.getContestsList();
+        setContests(response as Contest[]);
+      } catch (error) {
+        toast.error("Error fetching contests. Please try again later. If problem persists, contact volunteers.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContests();
+  }, []);
+
   const navigate = useNavigate();
   const handleContestClick = (contestId: string) => {
     navigate(`/contest/${contestId}`);
@@ -16,10 +38,17 @@ const ContestList: React.FC = () => {
     <div className="bg-black text-white min-h-screen flex flex-col">
       <Navbar />
       <ContestListHero />
-      <ContestGrid
-        contests={contestsListData}
-        onContestClick={handleContestClick}
-      />
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="animate-spin mr-2 h-8 w-8 text-green-500" />
+          <p>Loading contests...</p>
+        </div>
+      ) : (
+        <ContestGrid
+          contests={contests}
+          onContestClick={handleContestClick}
+        />
+      )}
       <Footer />
     </div>
   );
