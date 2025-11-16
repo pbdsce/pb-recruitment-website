@@ -5,8 +5,6 @@ interface TestCase {
   id: string;
   inputFile: File | null;
   expectedOutputFile: File | null;
-  checkerFile: File | null;
-  hasMultipleOutputs: boolean;
 }
 
 interface Problem {
@@ -20,6 +18,8 @@ interface Problem {
   correctAnswer?: number;
   // Code problem specific fields
   testCases?: TestCase[];
+  hasCustomChecker?: boolean;
+  checkerFile?: File | null;
   timeLimit?: number; 
   memoryLimit?: number; 
 }

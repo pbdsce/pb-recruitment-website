@@ -8,8 +8,6 @@ interface TestCase {
   id: string;
   inputFile: File | null;
   expectedOutputFile: File | null;
-  checkerFile: File | null;
-  hasMultipleOutputs: boolean;
 }
 
 interface Problem {
@@ -21,6 +19,8 @@ interface Problem {
   options?: string[];
   correctAnswer?: number;
   testCases?: TestCase[];
+  hasCustomChecker?: boolean;
+  checkerFile?: File | null;
   timeLimit?: number;
   memoryLimit?: number;
 }
@@ -40,6 +40,8 @@ const AddProblem: React.FC = () => {
     options: ["", "", "", ""],
     correctAnswer: 0,
     testCases: [],
+    hasCustomChecker: false,
+    checkerFile: null,
     timeLimit: 1,
     memoryLimit: 256,
   });
@@ -80,7 +82,7 @@ const AddProblem: React.FC = () => {
       type,
       ...(type === "mcq"
         ? { options: ["", "", "", ""], correctAnswer: 0 }
-        : { testCases: [], timeLimit: 1, memoryLimit: 256 }),
+        : { testCases: [], hasCustomChecker: false, checkerFile: null, timeLimit: 1, memoryLimit: 256 }),
     }));
     if (type === "code") {
       setTestCases([]);
@@ -92,8 +94,6 @@ const AddProblem: React.FC = () => {
       id: `tc-${Date.now()}`,
       inputFile: null,
       expectedOutputFile: null,
-      checkerFile: null,
-      hasMultipleOutputs: false,
     };
     setTestCases([...testCases, newTestCase]);
   };
@@ -108,8 +108,12 @@ const AddProblem: React.FC = () => {
     ));
   };
 
-  const handleFileChange = (testCaseId: string, field: 'inputFile' | 'expectedOutputFile' | 'checkerFile', file: File | null) => {
+  const handleFileChange = (testCaseId: string, field: 'inputFile' | 'expectedOutputFile', file: File | null) => {
     updateTestCase(testCaseId, field, file);
+  };
+
+  const handleCheckerFileChange = (file: File | null) => {
+    setFormData((prev) => ({ ...prev, checkerFile: file }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,17 +158,21 @@ const AddProblem: React.FC = () => {
         </div>
 
         {/* Form */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Basic Information Section */}
             <div>
-              <label className="block text-gray-400 mb-2 font-semibold">Problem ID</label>
+              <h3 className="text-base font-bold text-green-400 mb-3">Basic Information</h3>
+            </div>
+            <div>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem ID</label>
               <input
                 type="text"
                 name="id"
                 value={formData.id}
                 onChange={handleInputChange}
                 disabled={!!editingProblem}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 placeholder="e.g., problem-1"
               />
@@ -174,12 +182,12 @@ const AddProblem: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-400 mb-2 font-semibold">Problem Type</label>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem Type</label>
               <select
                 name="type"
                 value={formData.type}
                 onChange={(e) => handleTypeChange(e.target.value as "code" | "mcq")}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                 required
               >
                 <option value="code">Code Problem</option>
@@ -188,45 +196,49 @@ const AddProblem: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-400 mb-2 font-semibold">Problem Title</label>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem Title</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                 required
                 placeholder="Enter the problem title"
               />
             </div>
 
             <div>
-              <label className="block text-gray-400 mb-2 font-semibold">Description</label>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                rows={8}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                rows={5}
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                 required
                 placeholder="Enter the problem description, constraints, and examples"
               />
             </div>
 
+            {/* MCQ Options Section */}
             {formData.type === "mcq" && (
               <>
-                <div className="space-y-3">
+                <div className="border-t border-gray-700 pt-4 mt-1">
+                  <h3 className="text-base font-bold text-green-400 mb-3">Answer Options</h3>
+                </div>
+                <div className="space-y-2">
                   <label className="block text-gray-400 mb-2 font-semibold">Options</label>
                   {formData.options?.map((option, index) => (
                     <div key={index}>
-                      <label className="block text-gray-500 text-sm mb-1">
+                      <label className="block text-gray-500 text-xs mb-1">
                         Option {index + 1}
                       </label>
                       <input
                         type="text"
                         value={option}
                         onChange={(e) => handleOptionChange(index, e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                        className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                         required
                         placeholder={`Enter option ${index + 1}`}
                       />
@@ -234,12 +246,12 @@ const AddProblem: React.FC = () => {
                   ))}
                 </div>
                 <div>
-                  <label className="block text-gray-400 mb-2 font-semibold">Correct Answer</label>
+                  <label className="block text-gray-400 mb-1.5 text-sm font-medium">Correct Answer</label>
                   <select
                     name="correctAnswer"
                     value={formData.correctAnswer}
                     onChange={handleInputChange}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                     required
                   >
                     <option value={0}>Option 1</option>
@@ -253,92 +265,212 @@ const AddProblem: React.FC = () => {
 
             {formData.type === "code" && (
               <>
+                {/* Execution Limits Section */}
+                <div className="border-t border-gray-700 pt-4 mt-1">
+                  <h3 className="text-base font-bold text-green-400 mb-3">Execution Limits</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-gray-400 mb-1.5 text-sm font-medium">Time Limit (seconds)</label>
+                    <input
+                      type="number"
+                      name="timeLimit"
+                      value={formData.timeLimit}
+                      onChange={handleInputChange}
+                      min="1"
+                      step="0.1"
+                      className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 mb-1.5 text-sm font-medium">Memory Limit (MB)</label>
+                    <input
+                      type="number"
+                      name="memoryLimit"
+                      value={formData.memoryLimit}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Scoring Section */}
+            <div className="border-t border-gray-700 pt-4 mt-1">
+              <h3 className="text-base font-bold text-green-400 mb-3">Scoring</h3>
+            </div>
+            <div>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Points</label>
+              <input
+                type="number"
+                name="points"
+                value={formData.points}
+                onChange={handleInputChange}
+                min="0"
+                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
+                required
+                placeholder="e.g., 100"
+              />
+            </div>
+
+            {formData.type === "code" && (
+              <>
                 {/* Test Cases Section */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-gray-400 font-semibold">Test Cases</label>
+                <div className="space-y-3 border-t border-gray-700 pt-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <div>
+                      <label className="block text-base font-bold text-green-400 mb-0.5">Test Cases</label>
+                      <p className="text-xs text-gray-500">
+                        Upload input/output files for evaluation
+                        {testCases.length > 0 && ` (${testCases.length} test case${testCases.length !== 1 ? 's' : ''})`}
+                      </p>
+                    </div>
                     <button
                       type="button"
                       onClick={addTestCase}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+                      className="flex items-center gap-1.5 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
                     >
                       <Plus size={16} />
                       Add Test Case
                     </button>
                   </div>
 
+                  {/* Custom Checker Toggle */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="customChecker"
+                      checked={formData.hasCustomChecker}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hasCustomChecker: e.target.checked }))}
+                      className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2 cursor-pointer
+                        checked:bg-green-600 checked:border-green-600"
+                    />
+                    <label htmlFor="customChecker" className="text-sm text-gray-300 cursor-pointer">
+                      Use custom checker for this problem
+                    </label>
+                  </div>
+
+                  {/* Checker File Upload */}
+                  {formData.hasCustomChecker && (
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                        Checker Program <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => handleCheckerFileChange(e.target.files?.[0] || null)}
+                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-gray-300 text-xs
+                          file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold 
+                          file:bg-green-600 file:text-black hover:file:bg-green-700
+                          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+                          cursor-pointer transition-all"
+                      />
+                      {formData.checkerFile && (
+                        <p className="text-xs text-gray-400 mt-1">{formData.checkerFile.name}</p>
+                      )}
+                    </div>
+                  )}
+
                   {testCases.length === 0 ? (
-                    <div className="text-center py-8 bg-gray-800 rounded-lg border border-gray-700">
-                      <p className="text-gray-500">No test cases added yet. Click "Add Test Case" to get started.</p>
+                    <div className="text-center py-8 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg border-2 border-dashed border-gray-700 hover:border-gray-600 transition-colors">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="bg-gray-700 p-3 rounded-full">
+                          <Plus size={24} className="text-gray-500" />
+                        </div>
+                        <div>
+                          <p className="text-gray-400 text-sm font-medium">No test cases added yet</p>
+                          <p className="text-gray-600 text-xs">Click "Add Test Case" to create your first test case</p>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {testCases.map((testCase, index) => (
-                        <div key={testCase.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-4">
-                            <h4 className="text-lg font-semibold text-green-400">Test Case {index + 1}</h4>
+                        <div 
+                          key={testCase.id} 
+                          className="bg-gradient-to-br from-gray-800 to-gray-850 border border-gray-700 rounded-lg p-3 hover:border-green-600 transition-all duration-200 shadow-md"
+                        >
+                          {/* Header */}
+                          <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-700">
+                            <div className="flex items-center gap-2">
+                              <div className="bg-green-600 text-black font-bold text-xs px-2 py-0.5 rounded">
+                                #{index + 1}
+                              </div>
+                              <h4 className="text-sm font-semibold text-gray-200">Test Case {index + 1}</h4>
+                            </div>
                             <button
                               type="button"
                               onClick={() => removeTestCase(testCase.id)}
-                              className="text-red-400 hover:text-red-300 transition-colors"
+                              className="text-red-400 hover:text-red-300 hover:bg-red-950 p-1.5 rounded transition-all duration-200"
+                              title="Remove test case"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={16} />
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Content */}
+                          <div className="space-y-2.5">
                             {/* Input File */}
-                            <div>
-                              <label className="block text-gray-400 mb-2 text-sm">Input File</label>
-                              <input
-                                type="file"
-                                onChange={(e) => handleFileChange(testCase.id, 'inputFile', e.target.files?.[0] || null)}
-                                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-black hover:file:bg-green-700"
-                              />
+                            <div className="space-y-1.5">
+                              <label className="block text-xs font-semibold text-gray-300">
+                                Input File <span className="text-red-400">*</span>
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  onChange={(e) => handleFileChange(testCase.id, 'inputFile', e.target.files?.[0] || null)}
+                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-gray-300 text-xs
+                                    file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold 
+                                    file:bg-gradient-to-r file:from-green-600 file:to-green-500 file:text-black 
+                                    hover:file:from-green-700 hover:file:to-green-600
+                                    focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+                                    cursor-pointer transition-all"
+                                />
+                              </div>
                               {testCase.inputFile && (
-                                <p className="text-xs text-gray-500 mt-1">{testCase.inputFile.name}</p>
+                                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-950 px-3 py-1.5 rounded-md border border-green-800">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  <span className="font-medium truncate">{testCase.inputFile.name}</span>
+                                </div>
                               )}
                             </div>
 
-                            {/* Has Multiple Outputs Toggle */}
-                            <div>
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={testCase.hasMultipleOutputs}
-                                  onChange={(e) => updateTestCase(testCase.id, 'hasMultipleOutputs', e.target.checked)}
-                                  className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2"
-                                />
-                                <span className="text-gray-400 text-sm">Has multiple outputs?</span>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="mt-4">
-                            {testCase.hasMultipleOutputs ? (
-                              /* Checker File */
-                              <div>
-                                <label className="block text-gray-400 mb-2 text-sm">Checker File</label>
-                                <input
-                                  type="file"
-                                  onChange={(e) => handleFileChange(testCase.id, 'checkerFile', e.target.files?.[0] || null)}
-                                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-black hover:file:bg-green-700"
-                                />
-                                {testCase.checkerFile && (
-                                  <p className="text-xs text-gray-500 mt-1">{testCase.checkerFile.name}</p>
-                                )}
-                              </div>
+                            {/* Expected Output or Checker Status */}
+                            {formData.hasCustomChecker ? (
+                              <p className="text-xs text-gray-400">Judged by custom checker</p>
                             ) : (
-                              /* Expected Output File */
-                              <div>
-                                <label className="block text-gray-400 mb-2 text-sm">Expected Output File</label>
-                                <input
-                                  type="file"
-                                  onChange={(e) => handleFileChange(testCase.id, 'expectedOutputFile', e.target.files?.[0] || null)}
-                                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-black hover:file:bg-green-700"
-                                />
+                              <div className="space-y-1.5">
+                                <label className="block text-xs font-semibold text-gray-300">
+                                  Expected Output File <span className="text-red-400">*</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-1.5">
+                                  The exact output expected for the corresponding input file
+                                </p>
+                                <div className="relative">
+                                  <input
+                                    type="file"
+                                    onChange={(e) => handleFileChange(testCase.id, 'expectedOutputFile', e.target.files?.[0] || null)}
+                                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-gray-300 text-xs
+                                      file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold 
+                                      file:bg-gradient-to-r file:from-blue-600 file:to-blue-500 file:text-white 
+                                      hover:file:from-blue-700 hover:file:to-blue-600
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      cursor-pointer transition-all"
+                                  />
+                                </div>
                                 {testCase.expectedOutputFile && (
-                                  <p className="text-xs text-gray-500 mt-1">{testCase.expectedOutputFile.name}</p>
+                                  <div className="flex items-center gap-2 text-xs text-blue-400 bg-blue-950 px-3 py-1.5 rounded-md border border-blue-800 mt-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span className="font-medium truncate">{testCase.expectedOutputFile.name}</span>
+                                  </div>
                                 )}
                               </div>
                             )}
@@ -348,62 +480,20 @@ const AddProblem: React.FC = () => {
                     </div>
                   )}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-400 mb-2 font-semibold">Time Limit (seconds)</label>
-                    <input
-                      type="number"
-                      name="timeLimit"
-                      value={formData.timeLimit}
-                      onChange={handleInputChange}
-                      min="1"
-                      step="0.1"
-                      className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-2 font-semibold">Memory Limit (MB)</label>
-                    <input
-                      type="number"
-                      name="memoryLimit"
-                      value={formData.memoryLimit}
-                      onChange={handleInputChange}
-                      min="1"
-                      className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-                </div>
               </>
             )}
 
-            <div>
-              <label className="block text-gray-400 mb-2 font-semibold">Points</label>
-              <input
-                type="number"
-                name="points"
-                value={formData.points}
-                onChange={handleInputChange}
-                min="0"
-                className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                required
-                placeholder="e.g., 100"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-3">
               <button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-6 py-3 rounded-lg font-semibold transition-all duration-200"
+                className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
               >
                 {editingProblem ? "Update Problem" : "Create Problem"}
               </button>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-200 border border-gray-700"
+                className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 border border-gray-700"
               >
                 Cancel
               </button>
