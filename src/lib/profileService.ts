@@ -1,6 +1,6 @@
 import { auth } from "./firebase";
 import { updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { userApi, getDepartmentFromBranch, getCurrentYear } from "@/services/api/userApi";
+import { userApi, getDepartmentFromBranch, getBranchFromDepartment, getCurrentYear } from "@/services/api/userApi";
 
 export interface UserProfile {
   name: string;
@@ -12,29 +12,6 @@ export interface UserProfile {
 }
 
 const mapApiToProfile = (apiData: any): UserProfile => {
-  const departmentToBranch: Record<string, string> = {
-    'AI': 'Artificial Intelligence and Machine Learning',
-    'AE': 'Aeronautical Engineering',
-    'AU': 'Automobile Engineering',
-    'BT': 'Biotechnology',
-    'CG': 'Computer Science and Design',
-    'MD': 'Medical Electronics',
-    'ET': 'Electronics and Telecommunication Engineering',
-    'EC': 'Electronics and Communication Engineering',
-    'EI': 'Electronics and Instrumentation Engineering',
-    'ME': 'Mechanical Engineering',
-    'EE': 'Electrical Engineering',
-    'CH': 'Chemical Engineering',
-    'CY': 'Computer Science and Engineering(Cyber Security)',
-    'CD': 'Computer Science and Engineering(Data Science)',
-    'IC': 'Computer Science and Engineering(IoT and Cyber Security Including Blockchain)',
-    'IS': 'Information Science Engineering',
-    'CS': 'Computer Science Engineering',
-    'CB': 'Computer Science and Business Systems',
-    'CV': 'Civil Engineering',
-    'RI': 'Robotics and Artificial Intelligence',
-  };
-
   let joiningYear = '1st year';
   if (apiData.current_year === 2) joiningYear = '2nd year';
   if (apiData.current_year === 3) joiningYear = '3rd year';
@@ -45,7 +22,7 @@ const mapApiToProfile = (apiData: any): UserProfile => {
     email: apiData.email || '',
     mobile: apiData.mobile_number || '',
     joiningYear,
-    branch: departmentToBranch[apiData.department] || apiData.department || '',
+    branch: getBranchFromDepartment(apiData.department) || apiData.department || '',
   };
 };
 
