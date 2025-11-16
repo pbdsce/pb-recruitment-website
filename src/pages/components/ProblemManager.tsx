@@ -1,4 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+
+interface TestCase {
+  id: string;
+  inputFile: File | null;
+  expectedOutputFile: File | null;
+  checkerFile: File | null;
+  hasMultipleOutputs: boolean;
+}
 
 interface Problem {
   id: string;
@@ -8,8 +17,9 @@ interface Problem {
   type: "code" | "mcq";
   // MCQ specific fields
   options?: string[];
-  correctAnswer?: number; 
-  expectedOutput?: string;
+  correctAnswer?: number;
+  // Code problem specific fields
+  testCases?: TestCase[];
   timeLimit?: number; 
   memoryLimit?: number; 
 }
@@ -20,64 +30,32 @@ interface ProblemManagerProps {
 }
 
 const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
-  const [formData, setFormData] = useState<Problem>({
-    id: "",
-    title: "",
-    description: "",
-    points: 100,
-    type: "code",
-    options: ["", "", "", ""],
-    correctAnswer: 0,
-    expectedOutput: "",
-    timeLimit: 1,
-    memoryLimit: 256,
-  });
+  const navigate = useNavigate();
+  const { contestId } = useParams<{ contestId: string }>();
+  const location = useLocation();
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "points" || name === "timeLimit" || name === "memoryLimit" || name === "correctAnswer"
-        ? parseInt(value)
-        : value,
-    }));
-  };
-
-  const handleOptionChange = (index: number, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      options: prev.options?.map((opt, i) => (i === index ? value : opt)) || ["", "", "", ""],
-    }));
-  };
-
-  const handleTypeChange = (type: "code" | "mcq") => {
-    setFormData((prev) => ({
-      ...prev,
-      type,
-      ...(type === "mcq"
-        ? { options: ["", "", "", ""], correctAnswer: 0 }
-        : { expectedOutput: "", timeLimit: 1, memoryLimit: 256 }),
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingProblem) {
-      setProblems(problems.map((p) => (p.id === editingProblem.id ? formData : p)));
-    } else {
-      setProblems([...problems, formData]);
+  useEffect(() => {
+    // Handle returning from add/edit page with new problem data
+    if (location.state?.problem) {
+      const { problem, isEdit } = location.state;
+      if (isEdit) {
+        setProblems(problems.map((p) => (p.id === problem.id ? problem : p)));
+      } else {
+        setProblems([...problems, problem]);
+      }
+      // Clear the state
+      navigate(location.pathname, { replace: true, state: {} });
     }
-    resetForm();
+  }, [location.state]);
+
+  const handleAddProblem = () => {
+    navigate(`/admin/contest/${contestId}/problems/add`);
   };
 
   const handleEdit = (problem: Problem) => {
-    setEditingProblem(problem);
-    setFormData(problem);
-    setIsModalOpen(true);
+    navigate(`/admin/contest/${contestId}/problems/add`, {
+      state: { problem },
+    });
   };
 
   const handleDelete = (id: string) => {
@@ -86,28 +64,11 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      id: "",
-      title: "",
-      description: "",
-      points: 100,
-      type: "code",
-      options: ["", "", "", ""],
-      correctAnswer: 0,
-      expectedOutput: "",
-      timeLimit: 1,
-      memoryLimit: 256,
-    });
-    setEditingProblem(null);
-    setIsModalOpen(false);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-end mb-4">
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddProblem}
           className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-6 py-3 rounded-lg font-semibold transition-all duration-200"
         >
           + Add Problem
@@ -147,6 +108,10 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
                     {problem.type === 'code' && (
                       <>
                         <div>
+                          <span className="text-gray-500">Test Cases:</span>
+                          <span className="text-gray-300 ml-2">{problem.testCases?.length || 0}</span>
+                        </div>
+                        <div>
                           <span className="text-gray-500">Time Limit:</span>
                           <span className="text-gray-300 ml-2">{problem.timeLimit}s</span>
                         </div>
@@ -177,176 +142,6 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ problems, setProblems }
           ))
         )}
       </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg p-4 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-green-500">
-            <h3 className="text-2xl font-bold text-green-400 mb-6">
-              {editingProblem ? "Edit Problem" : "Create New Problem"}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-gray-400 mb-2">Problem ID</label>
-                <input
-                  type="text"
-                  name="id"
-                  value={formData.id}
-                  onChange={handleInputChange}
-                  disabled={!!editingProblem}
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none disabled:opacity-50"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-400 mb-2">Problem Type</label>
-                <select
-                  name="type"
-                  value={formData.type}
-                  onChange={(e) => handleTypeChange(e.target.value as "code" | "mcq")}
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                  required
-                >
-                  <option value="code">Code Problem</option>
-                  <option value="mcq">MCQ</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-gray-400 mb-2">Problem Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-400 mb-2">Description</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={6}
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              {formData.type === "mcq" && (
-                <>
-                  <div className="space-y-3">
-                    <label className="block text-gray-400 mb-2">Options</label>
-                    {formData.options?.map((option, index) => (
-                      <div key={index}>
-                        <label className="block text-gray-500 text-sm mb-1">
-                          Option {index + 1}
-                        </label>
-                        <input
-                          type="text"
-                          value={option}
-                          onChange={(e) => handleOptionChange(index, e.target.value)}
-                          className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                          required
-                          placeholder={`Enter option ${index + 1}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-2">Correct Answer</label>
-                    <select
-                      name="correctAnswer"
-                      value={formData.correctAnswer}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                      required
-                    >
-                      <option value={0}>Option 1</option>
-                      <option value={1}>Option 2</option>
-                      <option value={2}>Option 3</option>
-                      <option value={3}>Option 4</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
-              {formData.type === "code" && (
-                <>
-                  <div>
-                    <label className="block text-gray-400 mb-2">Expected Output</label>
-                    <textarea
-                      name="expectedOutput"
-                      value={formData.expectedOutput}
-                      onChange={handleInputChange}
-                      rows={4}
-                      className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none font-mono text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-400 mb-2">Time Limit (seconds)</label>
-                      <input
-                        type="number"
-                        name="timeLimit"
-                        value={formData.timeLimit}
-                        onChange={handleInputChange}
-                        min="1"
-                        step="0.1"
-                        className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-400 mb-2">Memory Limit (MB)</label>
-                      <input
-                        type="number"
-                        name="memoryLimit"
-                        value={formData.memoryLimit}
-                        onChange={handleInputChange}
-                        min="1"
-                        className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                        required
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-400 mb-2">Points</label>
-                  <input
-                    type="number"
-                    name="points"
-                    value={formData.points}
-                    onChange={handleInputChange}
-                    min="0"
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-gray-300 focus:border-green-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-6 py-3 rounded-lg font-semibold transition-all duration-200"
-                >
-                  {editingProblem ? "Update Problem" : "Create Problem"}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-6 py-3 rounded-lg font-semibold transition-all duration-200"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

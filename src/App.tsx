@@ -15,6 +15,7 @@ import { ForgotPassword } from "./pages/ForgotPassword";
 import { Profile } from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AddContest from "./pages/AddContest";
+import AddProblem from "./pages/AddProblem";
 import AdminContestProblems from "./pages/AdminContestProblems";
 import AdminContestContestants from "./pages/AdminContestContestants";
 import { AdminRoute } from "./components/AdminRoute";
@@ -40,6 +41,7 @@ const App: React.FC = () => {
         <Route path="/admin/contest/create" element={<AdminRoute><AddContest /></AdminRoute>} />
         <Route path="/admin/contest/:contestId/edit" element={<AdminRoute><AddContest /></AdminRoute>} />
         <Route path="/admin/contest/:contestId/problems" element={<AdminRoute><AdminContestProblems /></AdminRoute>} />
+        <Route path="/admin/contest/:contestId/problems/add" element={<AdminRoute><AddProblem /></AdminRoute>} />
         <Route path="/admin/contest/:contestId/contestants" element={<AdminRoute><AdminContestContestants /></AdminRoute>} />
       </Routes>
   );
