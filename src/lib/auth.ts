@@ -1,7 +1,7 @@
-import { auth, db } from "./firebase";
+import { auth } from "./firebase";
 import { sendPasswordResetEmail, type User } from "firebase/auth";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { userApi, getDepartmentFromBranch, getCurrentYear } from "@/services/api/userApi";
 
 export interface SignUpData {
   name: string;
@@ -14,15 +14,17 @@ export interface SignUpData {
 }
 
 export const signUpUser = async (data: SignUpData): Promise<User> => {
-  const { email, password, ...profile } = data;
+  const { email, password, name, id, mobile, joiningYear, branch } = data;
 
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
-  await setDoc(doc(db, "users", user.uid), {
-    ...profile,
-    email,
-    createdAt: new Date(),
+  await userApi.createUser({
+    name,
+    usn: id,
+    mobile_number: mobile,
+    current_year: getCurrentYear(joiningYear),
+    department: getDepartmentFromBranch(branch),
   });
 
   return user;

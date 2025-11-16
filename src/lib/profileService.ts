@@ -1,6 +1,6 @@
-import { auth, db } from "./firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { auth } from "./firebase";
 import { updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { userApi, getDepartmentFromBranch, getCurrentYear } from "@/services/api/userApi";
 
 export interface UserProfile {
   name: string;
@@ -11,23 +11,64 @@ export interface UserProfile {
   branch: string;
 }
 
-export const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+const mapApiToProfile = (apiData: any): UserProfile => {
+  const departmentToBranch: Record<string, string> = {
+    'AI': 'Artificial Intelligence and Machine Learning',
+    'AE': 'Aeronautical Engineering',
+    'AU': 'Automobile Engineering',
+    'BT': 'Biotechnology',
+    'CG': 'Computer Science and Design',
+    'MD': 'Medical Electronics',
+    'ET': 'Electronics and Telecommunication Engineering',
+    'EC': 'Electronics and Communication Engineering',
+    'EI': 'Electronics and Instrumentation Engineering',
+    'ME': 'Mechanical Engineering',
+    'EE': 'Electrical Engineering',
+    'CH': 'Chemical Engineering',
+    'CY': 'Computer Science and Engineering(Cyber Security)',
+    'CD': 'Computer Science and Engineering(Data Science)',
+    'IC': 'Computer Science and Engineering(IoT and Cyber Security Including Blockchain)',
+    'IS': 'Information Science Engineering',
+    'CS': 'Computer Science Engineering',
+    'CB': 'Computer Science and Business Systems',
+    'CV': 'Civil Engineering',
+    'RI': 'Robotics and Artificial Intelligence',
+  };
+
+  let joiningYear = '1st year';
+  if (apiData.current_year === 2) joiningYear = '2nd year';
+  if (apiData.current_year === 3) joiningYear = '3rd year';
+
+  return {
+    name: apiData.name || '',
+    id: apiData.usn || '',
+    email: apiData.email || '',
+    mobile: apiData.mobile_number || '',
+    joiningYear,
+    branch: departmentToBranch[apiData.department] || apiData.department || '',
+  };
+};
+
+export const fetchUserProfile = async (_userId: string): Promise<UserProfile | null> => {
   try {
-    const userDoc = await getDoc(doc(db, "users", userId));
-    if (userDoc.exists()) {
-      return userDoc.data() as UserProfile;
-    }
-    return null;
+    const apiData = await userApi.getUserProfile();
+    return mapApiToProfile(apiData);
   } catch (error) {
     console.error("Error fetching user profile:", error);
     throw error;
   }
 };
 
-export const updateUserProfile = async (userId: string, data: Partial<UserProfile>): Promise<void> => {
+export const updateUserProfile = async (_userId: string, data: Partial<UserProfile>): Promise<void> => {
   try {
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, data);
+    const updateData: any = {};
+    if (data.name) updateData.name = data.name;
+    if (data.id) updateData.usn = data.id;
+    if (data.mobile) updateData.mobile_number = data.mobile;
+    if (data.joiningYear) updateData.current_year = getCurrentYear(data.joiningYear);
+    if (data.branch) updateData.department = getDepartmentFromBranch(data.branch);
+
+    await userApi.updateUserProfile(updateData);
   } catch (error) {
     console.error("Error updating user profile:", error);
     throw error;
