@@ -1,20 +1,18 @@
 import { auth } from "./firebase";
 import { updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { userApi, getDepartmentFromBranch, getBranchFromDepartment, getCurrentYear } from "@/services/api/userApi";
+import { userApi, getDepartmentFromBranch, getBranchFromDepartment } from "@/services/api/userApi";
 
 export interface UserProfile {
   name: string;
   id: string; 
   email: string;
   mobile: string;
-  joiningYear: string;
+  joiningYear: number;
   branch: string;
 }
 
 const mapApiToProfile = (apiData: any): UserProfile => {
-  let joiningYear = '1st year';
-  if (apiData.current_year === 2) joiningYear = '2nd year';
-  if (apiData.current_year === 3) joiningYear = '3rd year';
+  const joiningYear = apiData.current_year || 1;
 
   return {
     name: apiData.name || '',
@@ -42,7 +40,7 @@ export const updateUserProfile = async (_userId: string, data: Partial<UserProfi
     if (data.name) updateData.name = data.name;
     if (data.id) updateData.usn = data.id;
     if (data.mobile) updateData.mobile_number = data.mobile;
-    if (data.joiningYear) updateData.current_year = getCurrentYear(data.joiningYear);
+    if (data.joiningYear) updateData.current_year = data.joiningYear;
     if (data.branch) updateData.department = getDepartmentFromBranch(data.branch);
 
     await userApi.updateUserProfile(updateData);

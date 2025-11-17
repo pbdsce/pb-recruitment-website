@@ -92,6 +92,8 @@ export const getBranchFromDepartment = (department: string): string => {
 };
 
 export const getCurrentYear = (joiningYear: string): number => {
+  const year = parseInt(joiningYear, 10);
+  if (year === 1 || year === 2 || year === 3) return year;
   if (joiningYear === '1st year') return 1;
   if (joiningYear === '2nd year') return 2;
   if (joiningYear === '3rd year') return 3;

@@ -1,14 +1,14 @@
 import { auth } from "./firebase";
 import { sendPasswordResetEmail, type User } from "firebase/auth";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { userApi, getDepartmentFromBranch, getCurrentYear } from "@/services/api/userApi";
+import { userApi, getDepartmentFromBranch } from "@/services/api/userApi";
 
 export interface SignUpData {
   name: string;
   id: string; //Application number or USN
   email: string;
   mobile: string;
-  joiningYear: string;
+  joiningYear: number;
   branch: string;
   password: string;
 }
@@ -23,7 +23,7 @@ export const signUpUser = async (data: SignUpData): Promise<User> => {
     name,
     usn: id,
     mobile_number: mobile,
-    current_year: getCurrentYear(joiningYear),
+    current_year: joiningYear,
     department: getDepartmentFromBranch(branch),
   });
 
