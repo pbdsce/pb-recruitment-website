@@ -39,8 +39,13 @@ class UserApiService {
     mobile_number: string;
     current_year: number;
     department: string;
+    password: string;
   }): Promise<void> {
-    await this.axiosInstance.post('/users/create', data);
+    const encodedPassword = btoa(unescape(encodeURIComponent(data.password)));
+    await this.axiosInstance.post('/users/create', {
+      ...data,
+      password: encodedPassword,
+    });
   }
 
   async getUserProfile(): Promise<any> {

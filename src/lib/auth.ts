@@ -1,6 +1,6 @@
 import { auth } from "./firebase";
 import { sendPasswordResetEmail, type User } from "firebase/auth";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { userApi } from "@/services/api/userApi";
 import { getDepartmentFromBranch } from "@/constants";
 
@@ -26,14 +26,10 @@ export const signUpUser = async (data: SignUpData): Promise<User> => {
     mobile_number: mobile,
     current_year: joiningYear,
     department: getDepartmentFromBranch(branch),
+    password,
   });
 
   return user;
-};
-
-export const loginUser = async (email: string, password: string): Promise<User> => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  return userCredential.user;
 };
 
 export const resetPassword = async (email: string) => {
