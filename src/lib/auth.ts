@@ -1,7 +1,8 @@
 import { auth } from "./firebase";
 import { sendPasswordResetEmail, type User } from "firebase/auth";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { userApi, getDepartmentFromBranch } from "@/services/api/userApi";
+import { userApi } from "@/services/api/userApi";
+import { getDepartmentFromBranch } from "@/constants";
 
 export interface SignUpData {
   name: string;

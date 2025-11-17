@@ -1,6 +1,7 @@
 import { auth } from "./firebase";
 import { updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { userApi, getDepartmentFromBranch, getBranchFromDepartment } from "@/services/api/userApi";
+import { userApi } from "@/services/api/userApi";
+import { getDepartmentFromBranch, getBranchFromDepartment } from "@/constants";
 
 export interface UserProfile {
   name: string;

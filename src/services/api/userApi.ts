@@ -59,38 +59,6 @@ class UserApiService {
   }
 }
 
-const branchToDepartment: Record<string, string> = {
-  'Artificial Intelligence and Machine Learning': 'AI',
-  'Aeronautical Engineering': 'AE',
-  'Automobile Engineering': 'AU',
-  'Biotechnology': 'BT',
-  'Computer Science and Design': 'CG',
-  'Medical Electronics Engineering': 'MD',
-  'Electronics and Telecommunication Engineering': 'ET',
-  'Electronics & Communication Engineering': 'EC',
-  'Electronics and Instrumentation Engineering': 'EI',
-  'Mechanical Engineering': 'ME',
-  'Electrical & Electronics Engineering': 'EE',
-  'Chemical Engineering': 'CH',
-  'Computer Science & Engineering (Cyber Security)': 'CY',
-  'Computer Science & Engineering (Data Science)': 'CD',
-  'Computer Science & Engineering (IoT and Cyber Security Including Blockchain)': 'IC',
-  'Information Science and Engineering': 'IS',
-  'Computer Science and Engineering': 'CS',
-  'Computer Science and Business Systems': 'CB',
-  'Civil Engineering': 'CV',
-  'Robotics and Artificial Intelligence': 'RI',
-};
-
-export const getDepartmentFromBranch = (branch: string): string => {
-  return branchToDepartment[branch] || branch.substring(0, 2).toUpperCase();
-};
-
-export const getBranchFromDepartment = (department: string): string => {
-  const entry = Object.entries(branchToDepartment).find(([_, code]) => code === department);
-  return entry ? entry[0] : department;
-};
-
 export const getCurrentYear = (joiningYear: string): number => {
   const year = parseInt(joiningYear, 10);
   if (year === 1 || year === 2 || year === 3) return year;

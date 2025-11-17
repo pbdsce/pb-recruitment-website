@@ -8,28 +8,7 @@ import { Popup } from "../components/ui/popup";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { auth } from "../lib/firebase";
 
-const BRANCHES = [
-  "Artificial Intelligence and Machine Learning",
-  "Aeronautical Engineering",
-  "Automobile Engineering",
-  "Biotechnology",
-  "Computer Science and Engineering",
-  "Computer Science and Business Systems",
-  "Computer Science & Engineering (Cyber Security)",
-  "Computer Science & Engineering (Data Science)",
-  "Computer Science & Engineering (IoT and Cyber Security Including Blockchain)",
-  "Computer Science and Design",
-  "Chemical Engineering",
-  "Civil Engineering",
-  "Electrical & Electronics Engineering",
-  "Electronics & Communication Engineering",
-  "Electronics and Instrumentation Engineering",
-  "Electronics and Telecommunication Engineering",
-  "Information Science and Engineering",
-  "Mechanical Engineering",
-  "Medical Electronics Engineering",
-  "Robotics and Artificial Intelligence"
-];
+import { BRANCHES } from "@/constants";
 
 export const Signup: React.FC = () => {
   const [formData, setFormData] = useState<Omit<SignUpData, 'joiningYear'> & { confirmPassword: string; joiningYear: number | "" }>({
