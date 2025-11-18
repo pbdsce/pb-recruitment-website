@@ -1,8 +1,6 @@
 import { auth } from "./firebase";
-import { sendPasswordResetEmail, type User } from "firebase/auth";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { userApi } from "@/services/api/userApi";
-import { getDepartmentFromBranch } from "@/constants";
+import { sendPasswordResetEmail, type User, signInWithCustomToken } from "firebase/auth";
+import { authApi } from "@/services/api/authApi";
 
 export interface SignUpData {
   name: string;
@@ -15,21 +13,12 @@ export interface SignUpData {
 }
 
 export const signUpUser = async (data: SignUpData): Promise<User> => {
-  const { email, password, name, id, mobile, joiningYear, branch } = data;
-
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  await userApi.createUser({
-    name,
-    usn: id,
-    mobile_number: mobile,
-    current_year: joiningYear,
-    department: getDepartmentFromBranch(branch),
-    password,
-  });
-
-  return user;
+  const { custom_token } = await authApi.signup(data);
+  if (!custom_token) {
+    throw new Error("Signup failed: missing custom token from server.");
+  }
+  const userCredential = await signInWithCustomToken(auth, custom_token);
+  return userCredential.user;
 };
 
 export const resetPassword = async (email: string) => {

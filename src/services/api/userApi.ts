@@ -33,21 +33,6 @@ class UserApiService {
     );
   }
 
-  async createUser(data: {
-    name: string;
-    usn: string;
-    mobile_number: string;
-    current_year: number;
-    department: string;
-    password: string;
-  }): Promise<void> {
-    const encodedPassword = btoa(unescape(encodeURIComponent(data.password)));
-    await this.axiosInstance.post('/users/create', {
-      ...data,
-      password: encodedPassword,
-    });
-  }
-
   async getUserProfile(): Promise<any> {
     const response = await this.axiosInstance.get('/users/profile');
     return response.data;
@@ -63,15 +48,6 @@ class UserApiService {
     await this.axiosInstance.post('/users/profile', data);
   }
 }
-
-export const getCurrentYear = (joiningYear: string): number => {
-  const year = parseInt(joiningYear, 10);
-  if (year === 1 || year === 2 || year === 3) return year;
-  if (joiningYear === '1st year') return 1;
-  if (joiningYear === '2nd year') return 2;
-  if (joiningYear === '3rd year') return 3;
-  return 1;
-};
 
 export const userApi = new UserApiService();
 
