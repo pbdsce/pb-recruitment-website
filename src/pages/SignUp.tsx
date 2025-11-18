@@ -8,36 +8,15 @@ import { Popup } from "../components/ui/popup";
 import { fetchSignInMethodsForEmail } from "firebase/auth";
 import { auth } from "../lib/firebase";
 
-const BRANCHES = [
-  "Artificial Intelligence and Machine Learning",
-  "Aeronautical Engineering",
-  "Automobile Engineering",
-  "Biotechnology",
-  "Computer Science and Engineering",
-  "Computer Science and Business Systems",
-  "Computer Science & Engineering (Cyber Security)",
-  "Computer Science & Engineering (Data Science)",
-  "Computer Science & Engineering (IoT and Cyber Security Including Blockchain)",
-  "Computer Science and Design",
-  "Chemical Engineering",
-  "Civil Engineering",
-  "Electrical & Electronics Engineering",
-  "Electronics & Communication Engineering",
-  "Electronics and Instrumentation Engineering",
-  "Electronics and Telecommunication Engineering",
-  "Information Science and Engineering",
-  "Mechanical Engineering",
-  "Medical Electronics Engineering",
-  "Robotics and Artificial Intelligence"
-];
+import { BRANCHES } from "@/constants";
 
 export const Signup: React.FC = () => {
-  const [formData, setFormData] = useState<SignUpData & { confirmPassword: string }>({
+  const [formData, setFormData] = useState<Omit<SignUpData, 'joiningYear'> & { confirmPassword: string; joiningYear: number | "" }>({
     name: "",
     id: "",
     email: "",
     mobile: "",
-    joiningYear: "",
+    joiningYear: "" as number | "",
     branch: "",
     password: "",
     confirmPassword: "",
@@ -83,7 +62,13 @@ export const Signup: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const updatedData: any = { ...formData, [name]: value };
+    
+    if (name === 'joiningYear') {
+      updatedData[name] = value ? parseInt(value, 10) : "";
+    }
+    
+    setFormData(updatedData);
 
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
@@ -100,7 +85,7 @@ export const Signup: React.FC = () => {
   const validateUSN = (usn: string) => /^1DS[A-Z0-9]{7}$/i.test(usn);
   const validatePassword = (password: string) => /^.{6,}$/.test(password);
 
-  const isFirstYear = formData.joiningYear === "1st year";
+  const isFirstYear = formData.joiningYear === 1;
 
   const checkEmailExists = async (email: string) => {
     email = email.trim().toLowerCase();
@@ -197,7 +182,7 @@ export const Signup: React.FC = () => {
 
     try {
       setLoading(true);
-      await signUpUser(formData);
+      await signUpUser({ ...formData, joiningYear: formData.joiningYear as number });
       
       setPopup({
         isOpen: true,
@@ -257,12 +242,12 @@ export const Signup: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="joiningYear" className="block text-sm font-medium text-gray-300">Year of Study:</label>
-                  <select id="joiningYear" name="joiningYear" value={formData.joiningYear} onChange={handleChange} required
+                  <select id="joiningYear" name="joiningYear" value={formData.joiningYear || ""} onChange={handleChange} required
                     className="w-full px-4 py-3 bg-black border border-white rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 cursor-pointer">
                     <option value="">Select Year of Study</option>
-                    <option value="1st year">1st year</option>
-                    <option value="2nd year">2nd year</option>
-                    <option value="3rd year">3rd year</option>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
                   </select>
                 </div>
               </div>

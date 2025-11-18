@@ -8,28 +8,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
 import { Edit2 } from "lucide-react";
 
-const BRANCHES = [
-  "Artificial Intelligence and Machine Learning",
-  "Aeronautical Engineering",
-  "Automobile Engineering",
-  "Biotechnology",
-  "Computer Science and Engineering",
-  "Computer Science and Business Systems",
-  "Computer Science & Engineering (Cyber Security)",
-  "Computer Science & Engineering (Data Science)",
-  "Computer Science & Engineering (IoT and Cyber Security Including Blockchain)",
-  "Computer Science and Design",
-  "Chemical Engineering",
-  "Civil Engineering",
-  "Electrical & Electronics Engineering",
-  "Electronics & Communication Engineering",
-  "Electronics and Instrumentation Engineering",
-  "Electronics and Telecommunication Engineering",
-  "Information Science and Engineering",
-  "Mechanical Engineering",
-  "Medical Electronics Engineering",
-  "Robotics and Artificial Intelligence"
-];
+import { BRANCHES } from "@/constants";
 
 export const Profile: React.FC = () => {
   const { user, userProfile, refreshProfile } = useAuth();

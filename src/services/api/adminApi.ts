@@ -2,6 +2,7 @@ import axios, { type AxiosInstance, type AxiosError } from 'axios';
 import type { Problem, LeaderboardEntry } from '@/features/contests/problem.types';
 import { Contest } from "@/models/contest";
 import { auth } from '@/lib/firebase';
+import { encodeBase64 } from '@/lib/base64';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -84,7 +85,7 @@ class AdminApiService {
     code: string,
     language: string
   ): Promise<SubmissionResponse> {
-    const encodedCode = btoa(unescape(encodeURIComponent(code)));
+    const encodedCode = encodeBase64(code);
     const response = await this.axiosInstance.post<SubmissionResponse>('/submission/submit', {
       contest_id: contestId,
       problem_id: problemId,

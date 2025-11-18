@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { loginUser } from "../lib/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
@@ -25,7 +26,7 @@ export const Login: React.FC = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      await loginUser(email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       setPopup({
         isOpen: true,
         type: "success",

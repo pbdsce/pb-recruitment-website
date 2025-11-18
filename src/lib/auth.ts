@@ -1,34 +1,24 @@
-import { auth, db } from "./firebase";
-import { sendPasswordResetEmail, type User } from "firebase/auth";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth } from "./firebase";
+import { sendPasswordResetEmail, type User, signInWithEmailAndPassword } from "firebase/auth";
+import { authApi } from "@/services/api/authApi";
 
 export interface SignUpData {
   name: string;
   id: string; //Application number or USN
   email: string;
   mobile: string;
-  joiningYear: string;
+  joiningYear: number;
   branch: string;
   password: string;
 }
 
 export const signUpUser = async (data: SignUpData): Promise<User> => {
-  const { email, password, ...profile } = data;
-
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  await setDoc(doc(db, "users", user.uid), {
-    ...profile,
-    email,
-    createdAt: new Date(),
-  });
-
-  return user;
-};
-
-export const loginUser = async (email: string, password: string): Promise<User> => {
+  const { email, password } = data;
+  
+  // Backend creates Firebase user and NeonDB user
+  await authApi.signup(data);
+  
+  // Sign in with email/password after backend creates the user
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
   return userCredential.user;
 };
