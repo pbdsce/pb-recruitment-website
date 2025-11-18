@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import type { Contest } from "@/models/contest";
+import { contestApi } from "@/services/api/contestApi";
+import { Popup } from "@/components/ui/popup";
+import { getAuth } from "firebase/auth";
 
 interface ContestTimelineProps {
   contest: Contest;
@@ -10,6 +13,18 @@ interface ContestTimelineProps {
 
 const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
   const navigate = useNavigate();
+  const [isRegistered, setIsRegistered] = React.useState<boolean>(
+    contest.is_registered ?? false
+  );
+  const [popup, setPopup] = useState<{
+      isOpen: boolean;
+      type: "success" | "error";
+      message: string;
+    }>({
+      isOpen: false,
+      type: "error",
+      message: "",
+    });
 
   const slideUp = {
     hidden: { opacity: 0, y: 30 },
@@ -27,8 +42,68 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
     },
   };
 
-  const handleRegister = () => {
-    navigate("/login");
+  useEffect(() => {
+    setIsRegistered(contest.is_registered ?? false);
+  }, [contest.id, contest.is_registered]);
+
+  const handleRegister = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await contestApi.registerForContest(contest.id);
+      setIsRegistered(true);
+      setPopup({
+        isOpen: true,
+        type: "success",
+        message: "Successfully registered for the contest!",
+      });
+      } catch (err: any) {
+        let message = "Failed to register. Please try again.";
+
+        if (err?.response?.status) {
+          switch (err.response.status) {
+            case 403:
+              message =
+                err.response.data?.error ||
+                "Registration is closed or you are not eligible.";
+              break;
+
+            case 404:
+              message =
+                err.response.data?.error || "Contest or user not found.";
+              break;
+
+            case 409:
+              message = "You are already registered.";
+              setIsRegistered(true);
+              break;
+
+            case 500:
+              message = "Server error. Please try again later.";
+              break;
+
+            default:
+              message = "Unexpected error occurred.";
+          }
+        }
+
+        setPopup({
+          isOpen: true,
+          type: "error",
+          message,
+        });
+      }
+    };
+
+    
+  const closePopup = () => {
+    setPopup(prev => ({ ...prev, isOpen: false }));
   };
 
   return (
@@ -97,13 +172,20 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
               whileTap={contest.isRegistrationOpen() ? { scale: 0.95 } : {}}
               onClick={handleRegister}
               disabled={!contest.isRegistrationOpen()}
-              className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
-                contest.isRegistrationOpen()
-                  ? "bg-green text-black hover:bg-green-600"
-                  : "bg-gray-700 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2
+                ${
+                  !contest.isRegistrationOpen() || isRegistered
+                    ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                    : "bg-green text-black hover:bg-green-600"
+                }
+              `}
             >
-              {contest.isRegistrationOpen() ? "Register" : "Registration Closed"}
+              {!contest.isRegistrationOpen()
+                ? "Registration Closed"
+                : isRegistered
+                ? "Already Registered"
+                : "Register"
+              }
               {contest.isRegistrationOpen() && <ChevronRight size={20} />}
             </motion.button>
             {contest.isRegistrationOpen() && (
@@ -114,6 +196,13 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
           </motion.div>
         </motion.div>
       </div>
+      <Popup
+        isOpen={popup.isOpen}
+        onClose={closePopup}
+        type={popup.type}
+        message={popup.message}
+        autoCloseDelay={popup.type === "success" ? 2000 : 5000}
+      />
     </section>
   );
 };
