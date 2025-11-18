@@ -1,5 +1,5 @@
 import { auth } from "./firebase";
-import { sendPasswordResetEmail, type User, signInWithCustomToken } from "firebase/auth";
+import { sendPasswordResetEmail, type User, signInWithEmailAndPassword } from "firebase/auth";
 import { authApi } from "@/services/api/authApi";
 
 export interface SignUpData {
@@ -13,11 +13,13 @@ export interface SignUpData {
 }
 
 export const signUpUser = async (data: SignUpData): Promise<User> => {
-  const { custom_token } = await authApi.signup(data);
-  if (!custom_token) {
-    throw new Error("Signup failed: missing custom token from server.");
-  }
-  const userCredential = await signInWithCustomToken(auth, custom_token);
+  const { email, password } = data;
+  
+  // Backend creates Firebase user and NeonDB user
+  await authApi.signup(data);
+  
+  // Sign in with email/password after backend creates the user
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
   return userCredential.user;
 };
 

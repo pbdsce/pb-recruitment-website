@@ -1,12 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
 import { getDepartmentFromBranch } from '@/constants';
-import { encodeBase64 } from '@/lib/base64';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
-interface SignupResponse {
-  custom_token: string;
-}
 
 export interface SignupPayload {
   name: string;
@@ -30,9 +25,7 @@ class AuthApiService {
     });
   }
 
-  async signup(data: SignupPayload): Promise<SignupResponse> {
-    const encodedPassword = encodeBase64(data.password);
-
+  async signup(data: SignupPayload): Promise<void> {
     const payload = {
       name: data.name,
       usn: data.id,
@@ -40,11 +33,10 @@ class AuthApiService {
       mobile_number: data.mobile,
       current_year: data.joiningYear,
       department: getDepartmentFromBranch(data.branch),
-      password: encodedPassword,
+      password: data.password,
     };
 
-    const response = await this.axiosInstance.post<SignupResponse>('/auth/signup', payload);
-    return response.data;
+    await this.axiosInstance.post('/auth/signup', payload);
   }
 }
 
