@@ -4,20 +4,56 @@ import { ChevronLeft } from "lucide-react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
 import ContestantManager from "./components/ContestantManager";
-import { contestsDetailData } from "../data/contestsData";
+import { adminApi } from "@/services/api/adminApi";
 
 const AdminContestContestants: React.FC = () => {
   const { contestId } = useParams<{ contestId: string }>();
   const navigate = useNavigate();
   const [contestants, setContestants] = useState<any[]>([]);
   const [contestName, setContestName] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    if (contestId && contestsDetailData[contestId]) {
-      setContestName(contestsDetailData[contestId].name);
-      // Initialize with empty contestants array
-      setContestants([]);
-    }
+    const fetchData = async () => {
+      if (!contestId) return;
+
+      try {
+        setLoading(true);
+        setError("");
+        
+        const [contest, registrations] = await Promise.all([
+          adminApi.getContestById(contestId),
+          adminApi.getContestRegistrations(contestId).catch(() => []),
+        ]);
+
+        if (contest) {
+          setContestName(contest.name);
+        } else {
+          setContestName(contestId);
+        }
+
+        const mappedContestants = registrations.map((reg: any) => ({
+          id: reg.user_id,
+          name: reg.name,
+          email: reg.email,
+          status: "Active" as const,
+          registrationDate: reg.registered_at 
+            ? new Date(reg.registered_at * 1000).toLocaleDateString() 
+            : "N/A",
+          score: 0,
+        }));
+
+        setContestants(mappedContestants);
+      } catch (err: any) {
+        console.error("Error fetching contestants:", err);
+        setError(err.message || "Failed to load contestants");
+        setContestants([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [contestId]);
 
   if (!contestId) {
@@ -52,10 +88,16 @@ const AdminContestContestants: React.FC = () => {
 
         {/* Contestant Manager */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <ContestantManager
-            contestants={contestants}
-            setContestants={setContestants}
-          />
+          {loading ? (
+            <p className="text-gray-400">Loading contestants...</p>
+          ) : error ? (
+            <p className="text-red-400">{error}</p>
+          ) : (
+            <ContestantManager
+              contestants={contestants}
+              setContestants={setContestants}
+            />
+          )}
         </div>
       </div>
       

@@ -67,6 +67,11 @@ class AdminApiService {
     return response.data;
   }
 
+  async getContestRegistrations(contestId: string): Promise<any[]> {
+    const response = await this.axiosInstance.get<any[]>(`/admin/contests/${contestId}/registrations`);
+    return response.data;
+  }
+
   async getContestById(contestId: string): Promise<Contest | null> {
     try {
       const response = await this.axiosInstance.get<any>(`/admin/contest/${contestId}`);
