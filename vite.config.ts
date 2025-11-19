@@ -11,4 +11,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    // Allow larger request bodies for file uploads (proxy to backend)
+    // Actual file size limits are configured in axios (50MB in problemApi.ts)
+    proxy: {
+      // Uncomment and configure when backend is ready
+      // '/api': {
+      //   target: process.env.VITE_API_BASE_URL || 'http://localhost:8080',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/api/, ''),
+      // },
+    },
+  },
 })

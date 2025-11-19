@@ -3,6 +3,9 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, Trash2, Plus } from "lucide-react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
+import { problemApi } from "@/services/api/problemApi";
+import { fileToBase64 } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 interface TestCase {
   id: string;
@@ -11,13 +14,13 @@ interface TestCase {
 }
 
 interface Problem {
-  id: string;
-  title: string;
+  id?: string; // UUID for editing
+  name: string; // Changed from title
   description: string;
-  points: number;
+  score: number; // Changed from points
   type: "code" | "mcq";
   options?: string[];
-  correctAnswer?: number;
+  answer?: number[]; // Changed from correctAnswer to array
   testCases?: TestCase[];
   hasCustomChecker?: boolean;
   checkerFile?: File | null;
@@ -29,33 +32,73 @@ const AddProblem: React.FC = () => {
   const { contestId } = useParams<{ contestId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const editingProblem = location.state?.problem as Problem | null;
+  const problemIdFromState = location.state?.problemId as string | undefined;
 
   const [formData, setFormData] = useState<Problem>({
-    id: "",
-    title: "",
+    name: "",
     description: "",
-    points: 100,
+    score: 100,
     type: "code",
     options: ["", "", "", ""],
-    correctAnswer: 0,
+    answer: [0], // Array for MCQ answers
     testCases: [],
     hasCustomChecker: false,
     checkerFile: null,
-    timeLimit: 1,
+    timeLimit: 1000,
     memoryLimit: 256,
   });
 
   const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isEditing = !!problemIdFromState;
 
   useEffect(() => {
-    if (editingProblem) {
-      setFormData(editingProblem);
-      if (editingProblem.testCases) {
-        setTestCases(editingProblem.testCases);
+    const fetchProblemDetails = async () => {
+      if (!problemIdFromState || !contestId) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const problemData = await problemApi.getProblem(contestId, problemIdFromState);
+        
+        setFormData({
+          id: problemData.id,
+          name: problemData.name || "",
+          description: problemData.description || "",
+          score: problemData.score || 100,
+          type: problemData.type || "code",
+          options: problemData.answer || ["", "", "", ""],
+          answer: [0], // Default to first option, can't determine from backend
+          hasCustomChecker: problemData.has_custom_checker || false,
+          checkerFile: null,
+          timeLimit: problemData.time_limit || 1000,
+          memoryLimit: problemData.memory_limit || 256,
+        });
+        
+        // Handle test cases - convert from backend format
+        if (problemData.testcases && problemData.testcases.length > 0) {
+          const mappedTestCases: TestCase[] = problemData.testcases.map((tc) => ({
+            id: `tc-${tc.id}`,
+            inputFile: null, // Files can't be restored from URLs
+            expectedOutputFile: null,
+          }));
+          setTestCases(mappedTestCases);
+        }
+      } catch (err: any) {
+        console.error("Error fetching problem details:", err);
+        setError(err.message || "Failed to load problem details");
+        toast.error(err.message || "Failed to load problem details");
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, [editingProblem]);
+    };
+    
+    fetchProblemDetails();
+  }, [problemIdFromState, contestId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -63,9 +106,16 @@ const AddProblem: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "points" || name === "timeLimit" || name === "memoryLimit" || name === "correctAnswer"
+      [name]: name === "score" || name === "timeLimit" || name === "memoryLimit"
         ? parseInt(value)
         : value,
+    }));
+  };
+
+  const handleAnswerChange = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      answer: [index], // Store as array with single value
     }));
   };
 
@@ -81,8 +131,8 @@ const AddProblem: React.FC = () => {
       ...prev,
       type,
       ...(type === "mcq"
-        ? { options: ["", "", "", ""], correctAnswer: 0 }
-        : { testCases: [], hasCustomChecker: false, checkerFile: null, timeLimit: 1, memoryLimit: 256 }),
+        ? { options: ["", "", "", ""], answer: [0] }
+        : { testCases: [], hasCustomChecker: false, checkerFile: null, timeLimit: 1000, memoryLimit: 256 }),
     }));
     if (type === "code") {
       setTestCases([]);
@@ -116,17 +166,103 @@ const AddProblem: React.FC = () => {
     setFormData((prev) => ({ ...prev, checkerFile: file }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Attach test cases to form data
-    const submissionData = {
-      ...formData,
-      testCases: formData.type === "code" ? testCases : undefined,
-    };
-    // Navigate back with the problem data
-    navigate(`/admin/contest/${contestId}/problems`, {
-      state: { problem: submissionData, isEdit: !!editingProblem },
-    });
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Validate required fields
+      if (!formData.name || !formData.description) {
+        throw new Error("Please fill in all required fields");
+      }
+
+      if (formData.type === "code") {
+        // Validate test cases for code problems
+        if (testCases.length === 0) {
+          throw new Error("Please add at least one test case");
+        }
+
+        // For new problems, validate files are uploaded
+        // For editing, only validate if files are being changed
+        if (!isEditing) {
+          for (let i = 0; i < testCases.length; i++) {
+            if (!testCases[i].inputFile) {
+              throw new Error(`Test case ${i + 1} is missing input file`);
+            }
+            if (!formData.hasCustomChecker && !testCases[i].expectedOutputFile) {
+              throw new Error(`Test case ${i + 1} is missing expected output file`);
+            }
+          }
+
+          // Validate custom checker file if enabled
+          if (formData.hasCustomChecker && !formData.checkerFile) {
+            throw new Error("Please upload a checker file");
+          }
+        }
+      }
+
+      // Convert test case files to base64 (only if files are present)
+      const testcasesData = await Promise.all(
+        testCases.map(async (tc) => {
+          // Only include testcase data if files are present (for new/updated test cases)
+          if (!tc.inputFile && !tc.expectedOutputFile) {
+            return null; // Skip this test case if no files (editing mode)
+          }
+          const input = tc.inputFile ? await fileToBase64(tc.inputFile) : "";
+          const expectedOutput = tc.expectedOutputFile ? await fileToBase64(tc.expectedOutputFile) : "";
+          return {
+            input,
+            expected_output: expectedOutput,
+          };
+        })
+      );
+
+      // Filter out null entries (test cases without files during edit)
+      const filteredTestcases = testcasesData.filter((tc): tc is { input: string; expected_output: string } => tc !== null);
+
+      // Convert checker file to base64 if present
+      let checkerBase64: string | undefined;
+      if (formData.checkerFile) {
+        checkerBase64 = await fileToBase64(formData.checkerFile);
+      }
+
+      // Prepare API request data
+      const apiData = {
+        name: formData.name,
+        description: formData.description,
+        score: formData.score,
+        type: formData.type,
+        ...(formData.type === "mcq" && {
+          answer: formData.options || [],
+          has_multiple_answers: false,
+        }),
+        ...(formData.type === "code" && {
+          ...(filteredTestcases.length > 0 && { testcases: filteredTestcases }),
+          time_limit: formData.timeLimit,
+          memory_limit: formData.memoryLimit,
+          ...(checkerBase64 && { checker: checkerBase64 }),
+        }),
+      };
+
+      // Call API to create or update problem
+      if (isEditing && formData.id) {
+        await problemApi.updateProblem(contestId!, formData.id, apiData);
+        toast.success("Problem updated successfully!");
+      } else {
+        await problemApi.createProblem(contestId!, apiData);
+        toast.success("Problem created successfully!");
+      }
+
+      // Navigate back to problems list
+      navigate(`/admin/contest/${contestId}/problems`);
+    } catch (err: any) {
+      console.error("Error submitting problem:", err);
+      setError(err.message || "Failed to save problem. Please try again.");
+      toast.error(err.message || "Failed to save problem");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -150,36 +286,48 @@ const AddProblem: React.FC = () => {
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-green-400 mb-2">
-            {editingProblem ? "Edit Problem" : "Add New Problem"}
+            {isEditing ? "Edit Problem" : "Add New Problem"}
           </h1>
           <p className="text-gray-400">
             Contest ID: <span className="text-green-400">{contestId}</span>
           </p>
+          {error && (
+            <div className="mt-3 bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
         </div>
 
         {/* Form */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-6">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <svg className="animate-spin h-8 w-8 text-green-400" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-gray-400">Loading problem details...</p>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Basic Information Section */}
             <div>
               <h3 className="text-base font-bold text-green-400 mb-3">Basic Information</h3>
             </div>
-            <div>
-              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem ID</label>
-              <input
-                type="text"
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                disabled={!!editingProblem}
-                className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                required
-                placeholder="e.g., problem-1"
-              />
-              {editingProblem && (
-                <p className="text-gray-500 text-sm mt-1">Problem ID cannot be changed</p>
-              )}
-            </div>
+            {isEditing && (
+              <div>
+                <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem ID</label>
+                <input
+                  type="text"
+                  value={formData.id?.toString() || ""}
+                  disabled
+                  className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <p className="text-gray-500 text-sm mt-1">Problem ID is auto-generated and cannot be changed</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem Type</label>
@@ -196,15 +344,15 @@ const AddProblem: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem Title</label>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Problem Name</label>
               <input
                 type="text"
-                name="title"
-                value={formData.title}
+                name="name"
+                value={formData.name}
                 onChange={handleInputChange}
                 className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                 required
-                placeholder="Enter the problem title"
+                placeholder="Enter the problem name"
               />
             </div>
 
@@ -248,9 +396,8 @@ const AddProblem: React.FC = () => {
                 <div>
                   <label className="block text-gray-400 mb-1.5 text-sm font-medium">Correct Answer</label>
                   <select
-                    name="correctAnswer"
-                    value={formData.correctAnswer}
-                    onChange={handleInputChange}
+                    value={formData.answer?.[0] ?? 0}
+                    onChange={(e) => handleAnswerChange(parseInt(e.target.value))}
                     className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                     required
                   >
@@ -271,14 +418,14 @@ const AddProblem: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-gray-400 mb-1.5 text-sm font-medium">Time Limit (seconds)</label>
+                    <label className="block text-gray-400 mb-1.5 text-sm font-medium">Time Limit (milliseconds)</label>
                     <input
                       type="number"
                       name="timeLimit"
                       value={formData.timeLimit}
                       onChange={handleInputChange}
                       min="1"
-                      step="0.1"
+                      step="1"
                       className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
                       required
                     />
@@ -304,11 +451,11 @@ const AddProblem: React.FC = () => {
               <h3 className="text-base font-bold text-green-400 mb-3">Scoring</h3>
             </div>
             <div>
-              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Points</label>
+              <label className="block text-gray-400 mb-1.5 text-sm font-medium">Score</label>
               <input
                 type="number"
-                name="points"
-                value={formData.points}
+                name="score"
+                value={formData.score}
                 onChange={handleInputChange}
                 min="0"
                 className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-green-500 focus:outline-none"
@@ -486,9 +633,20 @@ const AddProblem: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3 pt-3">
               <button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-black px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingProblem ? "Update Problem" : "Create Problem"}
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {isEditing ? "Updating..." : "Creating..."}
+                  </span>
+                ) : (
+                  <>{isEditing ? "Update Problem" : "Create Problem"}</>
+                )}
               </button>
               <button
                 type="button"
@@ -499,6 +657,7 @@ const AddProblem: React.FC = () => {
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
 

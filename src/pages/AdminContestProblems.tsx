@@ -9,14 +9,11 @@ import { contestsDetailData } from "../data/contestsData";
 const AdminContestProblems: React.FC = () => {
   const { contestId } = useParams<{ contestId: string }>();
   const navigate = useNavigate();
-  const [problems, setProblems] = useState<any[]>([]);
   const [contestName, setContestName] = useState<string>("");
 
   useEffect(() => {
     if (contestId && contestsDetailData[contestId]) {
       setContestName(contestsDetailData[contestId].name);
-      // Initialize with empty problems array - will be populated when user adds problems
-      setProblems([]);
     }
   }, [contestId]);
 
@@ -52,10 +49,7 @@ const AdminContestProblems: React.FC = () => {
 
         {/* Problem Manager */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <ProblemManager
-            problems={problems}
-            setProblems={setProblems}
-          />
+          <ProblemManager />
         </div>
       </div>
       
