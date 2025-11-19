@@ -26,6 +26,8 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
       message: "",
     });
 
+  const [countdown, setCountdown] = useState<string>("");
+  const [contestStarted, setContestStarted] = useState<boolean>(false);
   const slideUp = {
     hidden: { opacity: 0, y: 30 },
     show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -45,6 +47,42 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
   useEffect(() => {
     setIsRegistered(contest.is_registered ?? false);
   }, [contest.id, contest.is_registered]);
+
+  // Countdown timer effect
+  useEffect(() => {
+  if (!isRegistered) return;
+
+  const updateCountdown = () => {
+  const now = new Date().getTime();
+  const startTime = new Date(contest.start_time).getTime();
+  const distance = startTime - now;
+    console.log('Current time:', new Date(now).toLocaleString('en-IN'));
+    console.log('Contest start time:', new Date(contest.start_time).toLocaleString('en-IN'));
+    console.log('Distance (ms):', distance);
+
+    if (distance < 0) {
+      setContestStarted(true);
+      setCountdown("");
+      return;
+    }
+
+    const hours = Math.floor(distance / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    setCountdown(
+      `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+    );
+    setContestStarted(false);
+  };
+
+  updateCountdown();
+  const interval = setInterval(updateCountdown, 1000);
+
+  return () => clearInterval(interval);
+  }, [isRegistered, contest.start_time]);
 
   const handleRegister = async () => {
     const auth = getAuth();
@@ -101,7 +139,13 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
       }
     };
 
-    
+  const handleStartContest = () => {
+  // Request fullscreen 
+  document.documentElement.requestFullscreen().catch(() => {});
+
+  // Redirect to problems page
+  navigate(`/contests/${contest.id}/problems`);
+};
   const closePopup = () => {
     setPopup(prev => ({ ...prev, isOpen: false }));
   };
@@ -168,30 +212,42 @@ const ContestTimeline: React.FC<ContestTimelineProps> = ({ contest }) => {
                 : "Registration for this contest has closed."}
             </p>
             <motion.button
-              whileHover={contest.isRegistrationOpen() ? { scale: 1.05 } : {}}
-              whileTap={contest.isRegistrationOpen() ? { scale: 0.95 } : {}}
-              onClick={handleRegister}
-              disabled={!contest.isRegistrationOpen()}
+              whileHover={contest.isRegistrationOpen() || contestStarted ? { scale: 1.05 } : {}}
+              whileTap={contest.isRegistrationOpen() || contestStarted ? { scale: 0.95 } : {}}
+              onClick={contestStarted ? handleStartContest : handleRegister}
+              disabled={(!contest.isRegistrationOpen() && !contestStarted) || (isRegistered && !contestStarted)}
               className={`w-full py-3 px-6 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2
                 ${
-                  !contest.isRegistrationOpen() || isRegistered
+                  (!contest.isRegistrationOpen() && !contestStarted) || (isRegistered && !contestStarted)
                     ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                    : contestStarted
+                    ? "bg-green text-black hover:bg-green-600"
                     : "bg-green text-black hover:bg-green-600"
                 }
               `}
             >
-              {!contest.isRegistrationOpen()
+              {!contest.isRegistrationOpen() && !contestStarted
                 ? "Registration Closed"
+                : contestStarted
+                ? "Start Contest"
                 : isRegistered
                 ? "Already Registered"
                 : "Register"
               }
-              {contest.isRegistrationOpen() && <ChevronRight size={20} />}
+              {(contest.isRegistrationOpen() || contestStarted) && <ChevronRight size={20} />}
             </motion.button>
-            {contest.isRegistrationOpen() && (
+            {contest.isRegistrationOpen() && !isRegistered && (
               <p className="text-xs text-gray-400 mt-4 text-center">
                 Free to register
               </p>
+            )}
+            {isRegistered && !contestStarted && countdown && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-400 mb-1">Starts in</p>
+                <p className="text-2xl font-bold text-green-400 font-mono tracking-wider">
+                  {countdown}
+                </p>
+              </div>
             )}
           </motion.div>
         </motion.div>
